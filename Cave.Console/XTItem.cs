@@ -1,0 +1,157 @@
+using System;
+using System.Text;
+
+namespace Cave.Console
+{
+    /// <summary>
+    /// Provides very simple html style extended text attributes
+    /// </summary>
+    public class XTItem
+    {
+        /// <summary>Implements the operator +.</summary>
+        /// <param name="x1">The first item to add</param>
+        /// <param name="x2">The second item to add</param>
+        /// <returns>The result of the operator.</returns>
+        public static XT operator +(XTItem x1, XTItem x2)
+        {
+            return new XT(x1, x2);
+        }
+
+        /// <summary>Implements the operator ==.</summary>
+        /// <param name="x1">The first item</param>
+        /// <param name="x2">The second item</param>
+        /// <returns>The result of the operator.</returns>
+        public static bool operator ==(XTItem x1, XTItem x2)
+        {
+            if (ReferenceEquals(x1, null))
+            {
+                return ReferenceEquals(x2, null);
+            }
+
+            if (ReferenceEquals(x2, null))
+            {
+                return false;
+            }
+
+            return x1.ToString() == x2.ToString();
+        }
+
+        /// <summary>Implements the operator !=.</summary>
+        /// <param name="x1">The first item</param>
+        /// <param name="x2">The second item</param>
+        /// <returns>The result of the operator.</returns>
+        public static bool operator !=(XTItem x1, XTItem x2)
+        {
+            if (ReferenceEquals(x1, null))
+            {
+                return !ReferenceEquals(x2, null);
+            }
+
+            if (ReferenceEquals(x2, null))
+            {
+                return true;
+            }
+
+            return x1.ToString() != x2.ToString();
+        }
+
+        /// <summary>
+        /// Provides a new line item
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
+        public static readonly XTItem NewLine = new XTItem(XTColor.Default, XTStyle.Default, Environment.NewLine);
+
+        /// <summary>
+        /// Creates a new XT item
+        /// </summary>
+        /// <param name="color">Color of the item</param>
+        /// <param name="style">Style of the item</param>
+        /// <param name="text">Text</param>
+        public XTItem(XTColor color, XTStyle style, string text)
+        {
+            Color = color;
+            Style = style;
+            Text = text;
+        }
+
+        /// <summary>
+        /// Creates a new XT item
+        /// </summary>
+        /// <param name="color">Color of the item</param>
+        /// <param name="text">Text</param>
+        public XTItem(XTColor color, string text)
+        {
+            Color = color;
+            Style = XTStyle.Default;
+            Text = text;
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="XTItem"/> class.</summary>
+        /// <param name="text">The text.</param>
+        public XTItem(string text)
+        {
+            Color = XTColor.Default;
+            Style = XTStyle.Default;
+            Text = text;
+        }
+
+        /// <summary>
+        /// Obtains the Color of the item
+        /// </summary>
+        public readonly XTColor Color;
+
+        /// <summary>
+        /// Obtains the Style of the item
+        /// </summary>
+        public readonly XTStyle Style;
+
+        /// <summary>
+        /// Obtains the text of the item
+        /// </summary>
+        public readonly string Text;
+
+        /// <summary>
+        /// Obtains the full data text repesentation of the item containing style color and text
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            StringBuilder result = new StringBuilder();
+            if (Style != XTStyle.Default)
+            {
+                result.Append('<');
+                result.Append(Style);
+                result.Append('>');
+            }
+            if (Color != XTColor.Default)
+            {
+                result.Append('<');
+                result.Append(Color);
+                result.Append('>');
+            }
+            result.Append(Text);
+            return result.ToString();
+        }
+
+        /// <summary>Determines whether the specified <see cref="System.Object" />, is equal to this instance.</summary>
+        /// <param name="obj">The <see cref="System.Object" /> to compare with this instance.</param>
+        /// <returns><c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
+        public override bool Equals(object obj)
+        {
+            XTItem other = obj as XTItem;
+            if (ReferenceEquals(other, null))
+            {
+                return false;
+            }
+
+            return other.Color == Color && other.Style == Style && other.Text == Text;
+        }
+
+        /// <summary>Returns a hash code for this instance.</summary>
+        /// <returns>A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. </returns>
+        public override int GetHashCode()
+        {
+            return Text.GetHashCode() ^ Style.GetHashCode() ^ Color.GetHashCode();
+        }
+    }
+}
