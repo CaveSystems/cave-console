@@ -1,7 +1,7 @@
 namespace Cave.Console
 {
     /// <summary>
-    /// Provides available logging colors
+    /// Provides available logging colors.
     /// </summary>
     public enum XTStyle : byte
     {
@@ -20,5 +20,4 @@ namespace Cave.Console
         /// <summary>Strikeout</summary>
         Strikeout = 8,
     }
-
 }

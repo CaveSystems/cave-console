@@ -1,7 +1,7 @@
 namespace Cave.Console
 {
     /// <summary>
-    /// Provides available logging colors
+    /// Provides available logging colors.
     /// </summary>
     public enum XTColor : byte
     {
@@ -60,5 +60,4 @@ namespace Cave.Console
         /// </summary>
         White = 108,
     }
-
 }

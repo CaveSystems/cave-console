@@ -7,7 +7,7 @@ using System.Text;
 namespace Cave.Console
 {
     /// <summary>
-    /// Provides extension functions for <see cref="XT"/>
+    /// Provides extension functions for <see cref="XT"/>.
     /// </summary>
     public static class XTExtension
     {
@@ -28,7 +28,7 @@ namespace Cave.Console
         /// <returns></returns>
         public static XT ToXT<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> items)
         {
-            XTBuilder x = new XTBuilder();
+            var x = new XTBuilder();
             foreach (KeyValuePair<TKey, TValue> item in items)
             {
                 x.Append(item.ToXT());
@@ -55,15 +55,14 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Converts a exception to a loggable text message
+        /// Converts a exception to a loggable text message.
         /// </summary>
-        /// <param name="ex">The <see cref="Exception"/></param>
-        /// <param name="debug">Include debug information (stacktrace, data)</param>
+        /// <param name="ex">The <see cref="Exception"/>.</param>
+        /// <param name="debug">Include debug information (stacktrace, data).</param>
         /// <returns></returns>
-        [SuppressMessage("Microsoft.Globalization", "CA1303", MessageId = "Cave.Text.XTItem.#ctor(Cave.Text.XTColor,Cave.Text.XTStyle,System.String)")]
         public static XT ToXT(this Exception ex, bool debug = false)
         {
-            //ignore AggregateException
+            // ignore AggregateException
             if (ex is AggregateException)
             {
                 return ToXT(ex.InnerException, debug);
@@ -71,11 +70,11 @@ namespace Cave.Console
 
             if (ex == null)
             {
-                return new XT("");
+                return new XT(string.Empty);
             }
 
-            List<XTItem> result = new List<XTItem>();
-            XTItem spacer = new XTItem(XTColor.Default, XTStyle.Default, "  ");
+            var result = new List<XTItem>();
+            var spacer = new XTItem(XTColor.Default, XTStyle.Default, "  ");
 
             result.Add(new XTItem(XTColor.Red, XTStyle.Bold, ex.GetType().Name));
             if (debug)
@@ -192,14 +191,16 @@ namespace Cave.Console
             {
                 if (item.Color != color)
                 {
-                    //close old span
+                    // close old span
                     if (color != XTColor.Default)
                     {
                         sb.Append("</span>");
                     }
-                    //set new color
+
+                    // set new color
                     color = item.Color;
-                    //open new span
+
+                    // open new span
                     if (color != XTColor.Default)
                     {
                         sb.Append($"<span style=\"color:{color.ToString().ToLower()}\">");
@@ -207,7 +208,7 @@ namespace Cave.Console
                 }
                 if (item.Style != style)
                 {
-                    //close old tags
+                    // close old tags
                     if (style != XTStyle.Default)
                     {
                         if (style.HasFlag(XTStyle.Strikeout))
@@ -230,9 +231,11 @@ namespace Cave.Console
                             sb.Append("</strong>");
                         }
                     }
-                    //set new style
+
+                    // set new style
                     style = item.Style;
-                    //open new span
+
+                    // open new span
                     if (style.HasFlag(XTStyle.Bold))
                     {
                         sb.Append("<strong>");
@@ -295,7 +298,7 @@ namespace Cave.Console
         /// <param name="items">The extended text.</param>
         public static string ToHtml(this IEnumerable<IXT> items)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.Append("<html>");
             sb.Append("<body>");
             items.WriteHtml(sb);
@@ -308,7 +311,7 @@ namespace Cave.Console
         /// <param name="items">The extended text.</param>
         public static string ToHtml(this IEnumerable<XT> items)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.Append("<html>");
             sb.Append("<body>");
             items.WriteHtml(sb);

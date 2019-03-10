@@ -7,33 +7,52 @@ using Cave.Collections.Generic;
 namespace Cave.Console
 {
     /// <summary>
-    /// Provides access to the system console
+    /// Provides access to the system console.
     /// </summary>
     public static class SystemConsole
     {
+        class Item
+        {
+            public XTColor Color;
+            public XTStyle Style;
+            public bool Inverted;
+        }
+
         #region private implementation
-        static XTColor m_CurrentColor = XTColor.Gray;
-        static XTStyle m_CurrentStyle = XTStyle.Default;
-        static bool m_Inverted = false;
-        static bool m_WordWrap = true;
-        static bool m_UseColor = true;
-        static bool m_WaitUntilNewLine = false;
-        static string m_Buffer = "";
-        static string m_Title;
-        static Queue<C<XTColor, XTStyle, bool>> m_ColorQueue = new Queue<C<XTColor, XTStyle, bool>>();
+        static XTColor currentColor = XTColor.Gray;
+        static XTStyle currentStyle = XTStyle.Default;
+        static bool inverted = false;
+        static bool wordWrap = true;
+        static bool useColor = true;
+        static bool waitUntilNewLine = false;
+        static string buffer = string.Empty;
+        static string title;
+        static Queue<Item> colorQueue = new Queue<Item>();
 
         static void InternalSetColors()
         {
-            if (m_Inverted)
+            if (inverted)
             {
                 System.Console.ForegroundColor = ConsoleColor.Black;
-                if (m_CurrentColor == XTColor.Default) { System.Console.BackgroundColor = ConsoleColor.Gray; }
-                else { System.Console.BackgroundColor = XT.ToConsoleColor(m_CurrentColor); }
+                if (currentColor == XTColor.Default)
+                {
+                    System.Console.BackgroundColor = ConsoleColor.Gray;
+                }
+                else
+                {
+                    System.Console.BackgroundColor = XT.ToConsoleColor(currentColor);
+                }
             }
             else
             {
-                if (m_CurrentColor == XTColor.Default) { System.Console.ForegroundColor = ConsoleColor.Gray; }
-                else { System.Console.ForegroundColor = XT.ToConsoleColor(m_CurrentColor); }
+                if (currentColor == XTColor.Default)
+                {
+                    System.Console.ForegroundColor = ConsoleColor.Gray;
+                }
+                else
+                {
+                    System.Console.ForegroundColor = XT.ToConsoleColor(currentColor);
+                }
                 System.Console.BackgroundColor = ConsoleColor.Black;
             }
         }
@@ -45,8 +64,8 @@ namespace Cave.Console
                 System.Console.ForegroundColor = ConsoleColor.Gray;
                 System.Console.BackgroundColor = ConsoleColor.Black;
             }
-            m_CurrentColor = XTColor.Gray;
-            m_Inverted = false;
+            currentColor = XTColor.Gray;
+            inverted = false;
         }
 
         static void InternalNewLine()
@@ -72,10 +91,10 @@ namespace Cave.Console
                     return;
                 }
             }
-            if (m_WaitUntilNewLine)
+            if (waitUntilNewLine)
             {
-                System.Console.WriteLine(m_Buffer);
-                m_Buffer = "";
+                System.Console.WriteLine(buffer);
+                buffer = string.Empty;
             }
             else
             {
@@ -90,8 +109,8 @@ namespace Cave.Console
                 throw new ArgumentNullException("item");
             }
 
-            m_CurrentColor = item.Color;
-            m_CurrentStyle = item.Style;
+            currentColor = item.Color;
+            currentStyle = item.Style;
             return InternalWriteString(item.Text);
         }
 
@@ -118,21 +137,20 @@ namespace Cave.Console
             }
 
             int newLineCount = 0;
-            char[] CRLF = new char[] { '\r', '\n' };
-            if (m_WaitUntilNewLine)
+            if (waitUntilNewLine)
             {
-                if (text.IndexOfAny(CRLF) < 0)
+                if (text.IndexOfAny(new char[] { '\r', '\n' }) < 0)
                 {
-                    m_Buffer += text;
+                    buffer += text;
                     return newLineCount;
                 }
-                if (m_Buffer.Length > 0)
+                if (buffer.Length > 0)
                 {
-                    text = m_Buffer + text;
+                    text = buffer + text;
                 }
 
-                string print = text.Substring(0, text.LastIndexOfAny(CRLF) + 1);
-                m_Buffer = text.Substring(print.Length);
+                string print = text.Substring(0, text.LastIndexOfAny(new char[] { '\r', '\n' }) + 1);
+                buffer = text.Substring(print.Length);
                 if (UseColor || WordWrap)
                 {
                     text = print;
@@ -182,7 +200,7 @@ namespace Cave.Console
                 {
                     if (CanPosition)
                     {
-                        if (m_WordWrap && (System.Console.CursorLeft + TabWidth >= System.Console.WindowWidth))
+                        if (wordWrap && (System.Console.CursorLeft + TabWidth >= System.Console.WindowWidth))
                         {
                             if (UseColor)
                             {
@@ -204,7 +222,7 @@ namespace Cave.Console
                     }
                     continue;
                 }
-                if (m_WordWrap && (System.Console.CursorLeft + part.Length >= System.Console.WindowWidth))
+                if (wordWrap && (System.Console.CursorLeft + part.Length >= System.Console.WindowWidth))
                 {
                     if (UseColor)
                     {
@@ -225,7 +243,7 @@ namespace Cave.Console
 
         static string InternalReadLine()
         {
-            string result = "";
+            string result = string.Empty;
             while (true)
             {
                 ConsoleKeyInfo keyInfo = System.Console.ReadKey(true);
@@ -249,7 +267,7 @@ namespace Cave.Console
 
         static string InternalReadPassword()
         {
-            string result = "";
+            string result = string.Empty;
             while (true)
             {
                 ConsoleKeyInfo keyInfo = System.Console.ReadKey(true);
@@ -277,7 +295,7 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Creates a new SystemConsole instance
+        /// Initializes static members of the <see cref="SystemConsole"/> class.
         /// </summary>
         static SystemConsole()
         {
@@ -301,18 +319,30 @@ namespace Cave.Console
             try
             {
 #if NET20
-#elif NET35 || NET40 || NET45 || NET46 || NET471 || NETSTANDARD20
+#elif NET35 || NET40 || NET45 || NET46 || NET47 || NETSTANDARD20
                 System.Console.TreatControlCAsInput = true;
 #else
 #error No code defined for the current framework or NETXX version define missing!
 #endif
-                if (System.Console.KeyAvailable) { /* just check if we may call this */};
+                if (System.Console.KeyAvailable)
+                {
+                    /* just check if we may call this */
+                }
                 CanReadKey = true;
             }
-            catch { CanReadKey = false; }
+            catch
+            {
+                CanReadKey = false;
+            }
 
-            try { System.Console.Title = AssemblyVersionInfo.Program.ToString(); CanTitle = true; }
-            catch { }
+            try
+            {
+                System.Console.Title = AssemblyVersionInfo.Program.ToString();
+                CanTitle = true;
+            }
+            catch
+            {
+            }
 
             try
             {
@@ -348,15 +378,18 @@ namespace Cave.Console
                 {
                     try
                     {
-                        //disable word wrap on windows 10
+                        // disable word wrap on windows 10
                         Version winVer = Environment.OSVersion.Version;
                         if (LatestVersion.VersionIsNewer(winVer, new Version(6, 2)))
                         {
-                            m_WordWrap = false;
-                            //ClearEOL = true;
+                            wordWrap = false;
+
+                            // ClearEOL = true;
                         }
                     }
-                    catch { }
+                    catch
+                    {
+                    }
                 }
                 if (System.Console.CursorLeft >= System.Console.WindowWidth)
                 {
@@ -367,11 +400,11 @@ namespace Cave.Console
             }
             catch
             {
-                m_WordWrap = false;
+                wordWrap = false;
                 CanWordWrap = false;
             }
 
-            //console may be a stdout stream, wait until newline
+            // console may be a stdout stream, wait until newline
             if (!CanColor && !CanPosition && !CanWordWrap)
             {
                 WaitUntilNewLine = true;
@@ -413,7 +446,7 @@ namespace Cave.Console
         /// <exception cref="Exception">
         /// Application has no console!
         /// or
-        /// Input thread already started!
+        /// Input thread already started!.
         /// </exception>
         public static void SetKeyPressedEvent(SystemConsoleKeyPressedDelegate keyPressedEvent)
         {
@@ -441,7 +474,7 @@ namespace Cave.Console
         }
 
         /// <summary>Removes the key pressed event.</summary>
-        /// <exception cref="InvalidOperationException">KeyPressedEvent was already removed!</exception>
+        /// <exception cref="InvalidOperationException">KeyPressedEvent was already removed!.</exception>
         public static void RemoveKeyPressedEvent()
         {
             lock (SyncRoot)
@@ -460,7 +493,7 @@ namespace Cave.Console
         public static object SyncRoot { get; } = new object();
 
         /// <summary>
-        /// The number of leading spaces after a wordwrap
+        /// The number of leading spaces after a wordwrap.
         /// </summary>
         public static int LeadingSpace = 2;
 
@@ -469,37 +502,37 @@ namespace Cave.Console
         public static bool ClearEOL { get; set; }
 
         /// <summary>
-        /// Enables / disables WordWrap
+        /// Enables / disables WordWrap.
         /// </summary>
-        public static bool WordWrap { get => m_WordWrap & CanWordWrap; set => m_WordWrap = value; }
+        public static bool WordWrap { get => wordWrap & CanWordWrap; set => wordWrap = value; }
 
         /// <summary>
-        /// Enables / disables color
+        /// Gets or sets a value indicating whether color is enabled or not.
         /// </summary>
-        public static bool UseColor { get => m_UseColor & CanColor; set => m_UseColor = value; }
+        public static bool UseColor { get => useColor & CanColor; set => useColor = value; }
 
         /// <summary>
-        /// Waits until each line is completed
+        /// Gets or sets a value indicating whether the console waits until each line is completed.
         /// </summary>
-        public static bool WaitUntilNewLine { get => m_WaitUntilNewLine; set => m_WaitUntilNewLine = value; }
+        public static bool WaitUntilNewLine { get => waitUntilNewLine; set => waitUntilNewLine = value; }
 
         /// <summary>
-        /// Gets / sets the width of a tab character in spaces
+        /// Gets / sets the width of a tab character in spaces.
         /// </summary>
         public static int TabWidth = 2;
 
         /// <summary>
-        /// Obtains whether the console supports cursor positioning or not
+        /// Gets a value indicating whether the console supports cursor positioning or not.
         /// </summary>
         public static bool CanPosition { get; private set; }
 
         /// <summary>
-        /// Obtains whether the console can print colors or not
+        /// Gets whether the console can print colors or not.
         /// </summary>
         public static bool CanColor { get; private set; }
 
         /// <summary>
-        /// Obtains whether the console can do word wrapping or not
+        /// Gets whether the console can do word wrapping or not.
         /// </summary>
         public static bool CanWordWrap { get; private set; }
 
@@ -510,7 +543,7 @@ namespace Cave.Console
         public static bool CanReadKey { get; private set; }
 
         /// <summary>
-        /// Obtains whether the console can do word wrapping or not
+        /// Gets whether the console can do word wrapping or not.
         /// </summary>
         public static bool CanTitle { get; private set; }
 
@@ -522,14 +555,17 @@ namespace Cave.Console
                 try
                 {
                     bool b = System.Console.KeyAvailable;
-                    return (System.Console.BufferHeight != 0 || System.Console.BufferWidth != 0);
+                    return System.Console.BufferHeight != 0 || System.Console.BufferWidth != 0;
                 }
-                catch { return false; }
+                catch
+                {
+                    return false;
+                }
             }
         }
 
         /// <summary>Locks the console and reads a input line.</summary>
-        /// <returns>Returns the string read</returns>
+        /// <returns>Returns the string read.</returns>
         public static string ReadLine()
         {
             if (inputThread != null)
@@ -544,8 +580,7 @@ namespace Cave.Console
         }
 
         /// <summary>Locks the console and reads a input line showing only stars for each character.</summary>
-        /// <returns>Returns the string read</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Literale nicht als lokalisierte Parameter übergeben", MessageId = "System.Console.Write(System.String)")]
+        /// <returns>Returns the string read.</returns>
         public static string ReadPassword()
         {
             if (inputThread != null)
@@ -580,7 +615,7 @@ namespace Cave.Console
         }
 
         /// <summary>Gets a value indicating whether [key is available].</summary>
-        /// <remarks>This returns false if no console windows is available or the output is redirected!</remarks>
+        /// <remarks>This returns false if no console windows is available or the output is redirected!.</remarks>
         /// <value><c>true</c> if [key available]; otherwise, <c>false</c>.</value>
         public static bool KeyAvailable
         {
@@ -596,43 +631,49 @@ namespace Cave.Console
                     return false;
                 }
 
-                try { return System.Console.KeyAvailable; }
-                catch { return false; }
+                try
+                {
+                    return System.Console.KeyAvailable;
+                }
+                catch
+                {
+                    return false;
+                }
             }
         }
 
         /// <summary>
-        /// Gets/sets the current text color
+        /// Gets or sets the current text color.
         /// </summary>
         public static XTColor TextColor
         {
-            get => m_CurrentColor;
-            set => m_CurrentColor = value;
+            get => currentColor;
+            set => currentColor = value;
         }
 
         /// <summary>
-        /// Gets/sets the current text color
+        /// Gets or sets the current text color.
         /// </summary>
         public static XTStyle TextStyle
         {
-            get => m_CurrentStyle;
-            set => m_CurrentStyle = value;
+            get => currentStyle;
+            set => currentStyle = value;
         }
 
         /// <summary>
-        /// Invert the color (use color as background highlighter)
+        /// Invert the color (use color as background highlighter).
         /// </summary>
         public static bool Inverted
         {
-            get => m_Inverted;
-            set => m_Inverted = value;
+            get => inverted;
+            set => inverted = value;
         }
 
         /// <summary>
-        /// Writes a string to the console (no formatting)
+        /// Writes a string to the console (no formatting).
         /// </summary>
-        /// <param name="text">The plain string to write</param>
-        /// <returns>Returns the number of newlines printed</returns>
+        /// <param name="text">The plain string to write.</param>
+        /// <returns>Returns the number of newlines printed.</returns>
         public static int WriteString(string text)
         {
             lock (SyncRoot)
@@ -642,10 +683,10 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Writes a LogText to the console (with formatting)
+        /// Writes a LogText to the console (with formatting).
         /// </summary>
-        /// <param name="text">The <see cref="XT"/> instance to write</param>
-        /// <returns>Returns the number of newlines printed</returns>
+        /// <param name="text">The <see cref="XT"/> instance to write.</param>
+        /// <returns>Returns the number of newlines printed.</returns>
         public static int Write(XT text)
         {
             lock (SyncRoot)
@@ -666,10 +707,10 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Writes a LogText to the console (with formatting)
+        /// Writes a LogText to the console (with formatting).
         /// </summary>
-        /// <param name="item">The <see cref="XT"/> instance to write</param>
-        /// <returns>Returns the number of newlines printed</returns>
+        /// <param name="item">The <see cref="XT"/> instance to write.</param>
+        /// <returns>Returns the number of newlines printed.</returns>
         public static int Write(XTItem item)
         {
             lock (SyncRoot)
@@ -732,7 +773,7 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Starts a new line at the console
+        /// Starts a new line at the console.
         /// </summary>
         public static void NewLine()
         {
@@ -743,7 +784,7 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Resets the color to default value
+        /// Resets the color to default value.
         /// </summary>
         public static void ResetColor()
         {
@@ -754,14 +795,26 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Gets/sets the console title
+        /// Gets or sets the console title.
         /// </summary>
         public static string Title
         {
-            get { if (CanTitle) { lock (SyncRoot) { return System.Console.Title; } } return m_Title; }
+            get
+            {
+                if (CanTitle)
+                {
+                    lock (SyncRoot)
+                    {
+                        return System.Console.Title;
+                    }
+                }
+                return title;
+            }
+
             set
             {
-                m_Title = value; if (CanTitle)
+                title = value;
+                if (CanTitle)
                 {
                     lock (SyncRoot)
                     {
@@ -772,7 +825,7 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Clears the console
+        /// Clears the console.
         /// </summary>
         public static void Clear()
         {
@@ -786,7 +839,7 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Clears everything till end of line
+        /// Clears everything till end of line.
         /// </summary>
         public static void ClearToEOL()
         {
@@ -804,10 +857,10 @@ namespace Cave.Console
         /// <summary>Pops the color from the stack.</summary>
         public static void PopColor()
         {
-            C<XTColor, XTStyle, bool> i = m_ColorQueue.Dequeue();
-            m_CurrentColor = i.V1;
-            m_CurrentStyle = i.V2;
-            m_Inverted = i.V3;
+            var i = colorQueue.Dequeue();
+            currentColor = i.Color;
+            currentStyle = i.Style;
+            inverted = i.Inverted;
             if (CanColor)
             {
                 InternalSetColors();
@@ -817,8 +870,7 @@ namespace Cave.Console
         /// <summary>Pushes the color to the stack.</summary>
         public static void PushColor()
         {
-            m_ColorQueue.Enqueue(new C<XTColor, XTStyle, bool>(m_CurrentColor, m_CurrentStyle, m_Inverted));
+            colorQueue.Enqueue(new Item() { Color = currentColor, Style = currentStyle, Inverted = inverted });
         }
     }
 }
-

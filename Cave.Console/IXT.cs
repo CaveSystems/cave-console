@@ -1,7 +1,7 @@
 namespace Cave.Console
 {
     /// <summary>
-    /// Provides an interface for structs / objects supporting the ToXT() method
+    /// Provides an interface for structs / objects supporting the ToXT() method.
     /// </summary>
     public interface IXT
     {

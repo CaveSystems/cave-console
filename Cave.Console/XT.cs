@@ -8,7 +8,7 @@ namespace Cave.Console
 {
     /// <summary>
     /// Provides very simple html style eXtended Text attributes.
-    /// Valid attributes are
+    /// Valid attributes are.
     /// <list type="table">
     /// <listheader>
     /// <term>Attributetype</term>
@@ -28,7 +28,7 @@ namespace Cave.Console
     public sealed class XT : IXT, IEquatable<XT>
     {
         /// <summary>Performs an implicit conversion from <see cref="string"/> to <see cref="XT"/>.</summary>
-        /// <param name="text">The string containing extended text</param>
+        /// <param name="text">The string containing extended text.</param>
         /// <returns>The result of the conversion.</returns>
         public static implicit operator XT(string text)
         {
@@ -36,7 +36,7 @@ namespace Cave.Console
         }
 
         /// <summary>Performs an implicit conversion from <see cref="XTItem"/> array to <see cref="XT"/>.</summary>
-        /// <param name="items">The extended text items</param>
+        /// <param name="items">The extended text items.</param>
         /// <returns>The result of the conversion.</returns>
         public static implicit operator XT(XTItem[] items)
         {
@@ -44,8 +44,8 @@ namespace Cave.Console
         }
 
         /// <summary>Implements the operator +.</summary>
-        /// <param name="x1">The first item to add</param>
-        /// <param name="x2">The second item to add</param>
+        /// <param name="x1">The first item to add.</param>
+        /// <param name="x2">The second item to add.</param>
         /// <returns>The result of the operator.</returns>
         public static XT operator +(XT x1, XT x2)
         {
@@ -53,34 +53,34 @@ namespace Cave.Console
         }
 
         /// <summary>Implements the operator +.</summary>
-        /// <param name="x1">The first item to add</param>
-        /// <param name="x2">The second item to add</param>
+        /// <param name="x1">The first item to add.</param>
+        /// <param name="x2">The second item to add.</param>
         /// <returns>The result of the operator.</returns>
         public static XT operator +(XT x1, XTItem x2)
         {
-            List<XTItem> items = new List<XTItem>();
+            var items = new List<XTItem>();
             items.AddRange(x1.Items);
             items.Add(x2);
             return new XT(items.ToArray());
         }
 
         /// <summary>Implements the operator +.</summary>
-        /// <param name="x1">The first item to add</param>
-        /// <param name="x2">The second item to add</param>
+        /// <param name="x1">The first item to add.</param>
+        /// <param name="x2">The second item to add.</param>
         /// <returns>The result of the operator.</returns>
         public static XT operator +(XTItem x1, XT x2)
         {
-            List<XTItem> items = new List<XTItem>
+            var items = new List<XTItem>
             {
-                x1
+                x1,
             };
             items.AddRange(x2.Items);
             return new XT(items.ToArray());
         }
 
         /// <summary>Implements the operator +.</summary>
-        /// <param name="x1">The first item to add</param>
-        /// <param name="x2">The second item to add</param>
+        /// <param name="x1">The first item to add.</param>
+        /// <param name="x2">The second item to add.</param>
         /// <returns>The result of the operator.</returns>
         public static XT Add(XT x1, XT x2)
         {
@@ -88,8 +88,8 @@ namespace Cave.Console
         }
 
         /// <summary>Implements the operator ==.</summary>
-        /// <param name="x1">The first item</param>
-        /// <param name="x2">The second item</param>
+        /// <param name="x1">The first item.</param>
+        /// <param name="x2">The second item.</param>
         /// <returns>The result of the operator.</returns>
         public static bool operator ==(XT x1, XT x2)
         {
@@ -107,8 +107,8 @@ namespace Cave.Console
         }
 
         /// <summary>Implements the operator !=.</summary>
-        /// <param name="x1">The first item</param>
-        /// <param name="x2">The second item</param>
+        /// <param name="x1">The first item.</param>
+        /// <param name="x2">The second item.</param>
         /// <returns>The result of the operator.</returns>
         public static bool operator !=(XT x1, XT x2)
         {
@@ -126,17 +126,17 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Obtains the first valid color
+        /// Gets the first valid color.
         /// </summary>
         public const XTColor FirstColor = XTColor.Black;
 
         /// <summary>
-        /// Obtains the last valid color
+        /// Gets the last valid color.
         /// </summary>
         public const XTColor LastColor = XTColor.White;
 
         /// <summary>
-        /// Unboxes a token
+        /// Unboxes a token.
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
@@ -152,7 +152,7 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Obtains all defined <see cref="Color"/>s
+        /// Gets all defined <see cref="Color"/>s.
         /// </summary>
         public static Color[] PaletteColors => new Color[]
                 {
@@ -168,7 +168,7 @@ namespace Cave.Console
                 };
 
         /// <summary>
-        /// Obtains all defined <see cref="Color"/>s
+        /// Gets all defined <see cref="Color"/>s.
         /// </summary>
         public static ConsoleColor[] PaletteConsoleColors => new ConsoleColor[]
                 {
@@ -184,7 +184,7 @@ namespace Cave.Console
                 };
 
         /// <summary>
-        /// Checks whether a specified string is a valid <see cref="XTColor"/>
+        /// Checks whether a specified string is a valid <see cref="XTColor"/>.
         /// </summary>
         /// <param name="color"></param>
         /// <returns></returns>
@@ -210,7 +210,7 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Checks whether a specified string is a valid <see cref="XTStyle"/>
+        /// Checks whether a specified string is a valid <see cref="XTStyle"/>.
         /// </summary>
         /// <param name="style"></param>
         /// <returns></returns>
@@ -231,7 +231,7 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Obtains the <see cref="XTColor"/> for the specified string
+        /// Gets the <see cref="XTColor"/> for the specified string.
         /// </summary>
         /// <param name="color"></param>
         /// <returns></returns>
@@ -243,7 +243,7 @@ namespace Cave.Console
             }
 
             string unboxed = Unbox(color);
-            XTColor result = (XTColor)Enum.Parse(typeof(XTColor), unboxed, true);
+            var result = (XTColor)Enum.Parse(typeof(XTColor), unboxed, true);
             if ((result != XTColor.Default) && ((result > LastColor) || (result < FirstColor)))
             {
                 throw new ArgumentOutOfRangeException(nameof(color));
@@ -253,7 +253,7 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Obtains the <see cref="XTStyle"/> for the specified string
+        /// Gets the <see cref="XTStyle"/> for the specified string.
         /// </summary>
         /// <param name="style"></param>
         /// <returns></returns>
@@ -269,9 +269,9 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Converts the specified <see cref="XTColor"/> to a <see cref="ConsoleColor"/>
+        /// Converts the specified <see cref="XTColor"/> to a <see cref="ConsoleColor"/>.
         /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException">An Exception is thrown if an invalid color is given</exception>
+        /// <exception cref="ArgumentOutOfRangeException">An Exception is thrown if an invalid color is given.</exception>
         /// <param name="color"></param>
         /// <returns></returns>
         public static ConsoleColor ToConsoleColor(XTColor color)
@@ -287,9 +287,9 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Converts the specified <see cref="XTColor"/> to a <see cref="Color"/>
+        /// Converts the specified <see cref="XTColor"/> to a <see cref="Color"/>.
         /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException">An Exception is thrown if an invalid color string is given</exception>
+        /// <exception cref="ArgumentOutOfRangeException">An Exception is thrown if an invalid color string is given.</exception>
         /// <param name="color"></param>
         /// <returns></returns>
         public static Color ToColor(XTColor color)
@@ -305,7 +305,7 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Obtains the string for a specified color
+        /// Gets the string for a specified color.
         /// </summary>
         /// <param name="color"></param>
         /// <returns></returns>
@@ -315,7 +315,7 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Obtains the string for a specified style
+        /// Gets the string for a specified style.
         /// </summary>
         /// <param name="style"></param>
         /// <returns></returns>
@@ -330,7 +330,7 @@ namespace Cave.Console
         /// <returns></returns>
         public static XTItem[] Format(XT text, params object[] args)
         {
-            List<XTItem> result = new List<XTItem>();
+            var result = new List<XTItem>();
             foreach (XTItem item in text.Items)
             {
                 if (item.Text.StartsWith("{"))
@@ -338,10 +338,16 @@ namespace Cave.Console
                     if (int.TryParse(item.Text.Unbox("{", "}"), out int i))
                     {
                         object obj;
-                        try { obj = args[i]; }
-                        catch { obj = null; }
+                        try
                         {
-                            XTItem x = obj as XTItem;
+                            obj = args[i];
+                        }
+                        catch
+                        {
+                            obj = null;
+                        }
+                        {
+                            var x = obj as XTItem;
                             if (x != null)
                             {
                                 if (item.Color == XTColor.Default && item.Style == XTStyle.Default)
@@ -350,14 +356,14 @@ namespace Cave.Console
                                 }
                                 else
                                 {
-                                    //override sub style
+                                    // override sub style
                                     result.Add(new XTItem(item.Color, item.Style, x.Text));
                                 }
                                 continue;
                             }
                         }
                         {
-                            IXT x = obj as IXT;
+                            var x = obj as IXT;
                             if (x != null)
                             {
                                 if (item.Color == XTColor.Default && item.Style == XTStyle.Default)
@@ -368,18 +374,22 @@ namespace Cave.Console
                                 {
                                     foreach (XTItem sub in x.ToXT().Items)
                                     {
-                                        //override sub style
+                                        // override sub style
                                         result.Add(new XTItem(item.Color, item.Style, sub.Text));
                                     }
                                 }
                                 continue;
                             }
                         }
-                        if (ReferenceEquals(obj, null)) { result.Add(new XTItem(item.Color, item.Style, "<null>")); continue; }
+                        if (ReferenceEquals(obj, null))
+                        {
+                            result.Add(new XTItem(item.Color, item.Style, "<null>"));
+                            continue;
+                        }
                         XTItem newItem;
                         if (obj is bool)
                         {
-                            newItem = new XTItem((((bool)obj) ? XTColor.Green : XTColor.Red), item.Style, obj.ToString());
+                            newItem = new XTItem(((bool)obj) ? XTColor.Green : XTColor.Red, item.Style, obj.ToString());
                         }
                         else if (obj is double)
                         {
@@ -420,7 +430,7 @@ namespace Cave.Console
                                     break;
                                 }
 
-                                XTItem y = new XTItem(item.Color, item.Style, x[n].Text);
+                                var y = new XTItem(item.Color, item.Style, x[n].Text);
                                 result.Add(y);
                                 n++;
                             }
@@ -433,7 +443,7 @@ namespace Cave.Console
                         else if (obj is IEnumerable)
                         {
                             bool first = true;
-                            foreach (object o in ((IEnumerable)obj))
+                            foreach (object o in (IEnumerable)obj)
                             {
                                 if (first)
                                 {
@@ -467,8 +477,8 @@ namespace Cave.Console
         /// <returns></returns>
         public static XTItem Format(XTItem source, double d)
         {
-            //maximum 5 digits
-            long value = (long)Math.Round(d % 1 * 100000);
+            // maximum 5 digits
+            long value = (long)Math.Round((d % 1) * 100000);
 
             XTColor color = source.Color;
             if (color == XTColor.Default)
@@ -488,20 +498,21 @@ namespace Cave.Console
             }
             if (value % 100 != 0)
             {
-                //need all (5) digits
+                // need all (5) digits
                 return new XTItem(color, source.Style, d.ToString("N5"));
             }
             if (value % 1000 != 0)
             {
-                //need 3 digits
+                // need 3 digits
                 return new XTItem(color, source.Style, d.ToString("N3"));
             }
             if (value != 0)
             {
-                //need 2 digits
+                // need 2 digits
                 return new XTItem(color, source.Style, d.ToString("N2"));
             }
-            //no digits at all
+
+            // no digits at all
             return new XTItem(color, source.Style, d.ToString("N0"));
         }
 
@@ -511,8 +522,8 @@ namespace Cave.Console
         /// <returns></returns>
         public static XTItem Format(XTItem source, decimal d)
         {
-            //maximum 5 digits
-            long value = (long)Math.Round(d % 1 * 100000);
+            // maximum 5 digits
+            long value = (long)Math.Round((d % 1) * 100000);
 
             XTColor color = source.Color;
             if (color == XTColor.Default)
@@ -533,20 +544,21 @@ namespace Cave.Console
 
             if (value % 100 != 0)
             {
-                //need all (5) digits
+                // need all (5) digits
                 return new XTItem(color, d.ToString("N5"));
             }
             if (value % 1000 != 0)
             {
-                //need 3 digits
+                // need 3 digits
                 return new XTItem(color, d.ToString("N3"));
             }
             if (value != 0)
             {
-                //need 2 digits
+                // need 2 digits
                 return new XTItem(color, d.ToString("N2"));
             }
-            //no digits at all
+
+            // no digits at all
             return new XTItem(color, d.ToString("N0"));
         }
 
@@ -600,20 +612,20 @@ namespace Cave.Console
             return new XTItem(color, value.ToString());
         }
 
-        string m_Data;
-        string m_Text;
-        XTItem[] m_Items;
+        string data;
+        string text;
+        XTItem[] items;
 
         void ParseData()
         {
-            if (m_Data == null)
+            if (data == null)
             {
                 throw new Exception("Data is unset!");
             }
 
-            StringBuilder plainText = new StringBuilder();
-            string[] lines = StringExtensions.SplitNewLine(m_Data);
-            List<XTItem> items = new List<XTItem>();
+            var plainText = new StringBuilder();
+            string[] lines = StringExtensions.SplitNewLine(data);
+            var items = new List<XTItem>();
             items.Clear();
             for (int i = 0; i < lines.Length; i++)
             {
@@ -628,33 +640,44 @@ namespace Cave.Console
 
                 string currentLine = lines[i];
                 int textStart = 0;
-                string currentText = "";
+                string currentText = string.Empty;
                 while (true)
                 {
-                    //find a complete token
+                    // find a complete token
                     int tokenStart = currentLine.IndexOfAny(new char[] { '<', '{' }, textStart);
                     int tokenEnd = -1;
-                    //while we got a valid start
+
+                    // while we got a valid start
                     while (tokenStart > -1)
                     {
-                        //get end
+                        // get end
                         switch (currentLine[tokenStart])
                         {
                             case '<': tokenEnd = currentLine.IndexOf('>', tokenStart); break;
                             case '{': tokenEnd = currentLine.IndexOf('}', tokenStart); break;
                         }
-                        //check for another start in between
+
+                        // check for another start in between
                         int nextTokenStart = currentLine.IndexOfAny(new char[] { '<', '{' }, tokenStart + 1);
-                        //no additional start ? -> exit loop
-                        if (nextTokenStart < 0) { break; }
-                        //additional token, if current does not end, end it.
+
+                        // no additional start ? -> exit loop
+                        if (nextTokenStart < 0)
+                        {
+                            break;
+                        }
+
+                        // additional token, if current does not end, end it.
                         if (tokenEnd < 0)
                         {
                             tokenEnd = nextTokenStart - 1;
                             break;
                         }
-                        if (nextTokenStart > tokenEnd) { break; }
-                        //additional start -> skip the first
+                        if (nextTokenStart > tokenEnd)
+                        {
+                            break;
+                        }
+
+                        // additional start -> skip the first
                         tokenStart = nextTokenStart;
                     }
 
@@ -694,53 +717,53 @@ namespace Cave.Console
                     }
                     else
                     {
-                        //invalid token or parameter, ignore
+                        // invalid token or parameter, ignore
                         plainText.Append(token);
                         items.Add(new XTItem(color, style, token));
                     }
                     textStart = tokenEnd;
                 }
             }
-            if (m_Data.EndsWith("\r") || m_Data.EndsWith("\n"))
+            if (data.EndsWith("\r") || data.EndsWith("\n"))
             {
                 items.Add(XTItem.NewLine);
                 plainText.AppendLine();
             }
             if (items.Count > 0 && items[items.Count - 1].Color != XTColor.Default)
             {
-                items.Add(new XTItem(XTColor.Default, ""));
-                m_Data += "<default>";
+                items.Add(new XTItem(XTColor.Default, string.Empty));
+                data += "<default>";
             }
-            m_Text = plainText.ToString();
-            m_Items = items.ToArray();
+            text = plainText.ToString();
+            this.items = items.ToArray();
         }
 
         /// <summary>
-        /// Obtains all <see cref="XT"/> Items at this instance
+        /// Gets all <see cref="XT"/> Items at this instance.
         /// </summary>
         public XTItem[] Items
         {
             get
             {
-                if (m_Items == null)
+                if (items == null)
                 {
                     ParseData();
                 }
 
-                return (XTItem[])m_Items.Clone();
+                return (XTItem[])items.Clone();
             }
         }
 
         /// <summary>
-        /// Obtains the plain data containing all style and color informations
+        /// Gets the plain data containing all style and color informations.
         /// </summary>
         public string Data
         {
             get
             {
-                if (m_Data == null)
+                if (data == null)
                 {
-                    StringBuilder sb = new StringBuilder();
+                    var sb = new StringBuilder();
                     XTColor col = XTColor.Default;
                     XTStyle syl = XTStyle.Default;
                     foreach (XTItem item in Items)
@@ -763,37 +786,37 @@ namespace Cave.Console
                         col = item.Color;
                         syl = item.Style;
                     }
-                    m_Data = sb.ToString();
+                    data = sb.ToString();
                 }
-                return m_Data;
+                return data;
             }
         }
 
         /// <summary>
-        /// Obtains the plain text without any style and color informations
+        /// Gets the plain text without any style and color informations.
         /// </summary>
         public string Text
         {
             get
             {
-                if (m_Text == null)
+                if (text == null)
                 {
-                    if (m_Items == null)
+                    if (items == null)
                     {
                         ParseData();
                     }
 
-                    if (m_Text == null)
+                    if (text == null)
                     {
-                        StringBuilder result = new StringBuilder();
-                        foreach (XTItem item in m_Items)
+                        var result = new StringBuilder();
+                        foreach (XTItem item in items)
                         {
                             result.Append(item.Text);
                         }
-                        m_Text = result.ToString();
+                        text = result.ToString();
                     }
                 }
-                return m_Text;
+                return text;
             }
         }
 
@@ -803,17 +826,17 @@ namespace Cave.Console
         {
             get
             {
-                if (m_Items == null)
+                if (items == null)
                 {
                     ParseData();
                 }
 
-                return m_Items.Length;
+                return items.Length;
             }
         }
 
         /// <summary>
-        /// Creates a new eXtended Text
+        /// Initializes a new instance of the <see cref="XT"/> class.
         /// </summary>
         /// <param name="data"></param>
         public XT(string data)
@@ -823,7 +846,7 @@ namespace Cave.Console
                 throw new ArgumentNullException("data");
             }
 
-            m_Data = data;
+            this.data = data;
         }
 
         /// <summary>Initializes a new instance of the <see cref="XT"/> class.</summary>
@@ -839,10 +862,12 @@ namespace Cave.Console
         /// <param name="items">The items.</param>
         public XT(params XTItem[] items)
         {
-            m_Items = items;
+            this.items = items;
         }
 
-        /// <summary>Creates a new eXtended Text</summary>
+        /// <summary>
+        /// Initializes a new instance of the <see cref="XT"/> class.
+        /// </summary>
         /// <param name="xT1">The first item to add.</param>
         /// <param name="xT2">The second item to add.</param>
         public XT(XT xT1, XT xT2)
@@ -857,10 +882,10 @@ namespace Cave.Console
                 throw new ArgumentNullException("xT2");
             }
 
-            List<XTItem> items = new List<XTItem>();
+            var items = new List<XTItem>();
             items.AddRange(xT1.Items);
             items.AddRange(xT2.Items);
-            m_Items = items.ToArray();
+            this.items = items.ToArray();
         }
 
         /// <summary>Gibt an, ob das aktuelle Objekt einem anderen Objekt des gleichen Typs entspricht.</summary>
@@ -885,7 +910,7 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Obtains the parsable data of the xt
+        /// Gets the parsable data of the xt.
         /// </summary>
         /// <returns></returns>
         public override string ToString()

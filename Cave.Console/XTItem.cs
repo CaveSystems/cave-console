@@ -4,13 +4,13 @@ using System.Text;
 namespace Cave.Console
 {
     /// <summary>
-    /// Provides very simple html style extended text attributes
+    /// Provides very simple html style extended text attributes.
     /// </summary>
     public class XTItem
     {
         /// <summary>Implements the operator +.</summary>
-        /// <param name="x1">The first item to add</param>
-        /// <param name="x2">The second item to add</param>
+        /// <param name="x1">The first item to add.</param>
+        /// <param name="x2">The second item to add.</param>
         /// <returns>The result of the operator.</returns>
         public static XT operator +(XTItem x1, XTItem x2)
         {
@@ -18,8 +18,8 @@ namespace Cave.Console
         }
 
         /// <summary>Implements the operator ==.</summary>
-        /// <param name="x1">The first item</param>
-        /// <param name="x2">The second item</param>
+        /// <param name="x1">The first item.</param>
+        /// <param name="x2">The second item.</param>
         /// <returns>The result of the operator.</returns>
         public static bool operator ==(XTItem x1, XTItem x2)
         {
@@ -37,8 +37,8 @@ namespace Cave.Console
         }
 
         /// <summary>Implements the operator !=.</summary>
-        /// <param name="x1">The first item</param>
-        /// <param name="x2">The second item</param>
+        /// <param name="x1">The first item.</param>
+        /// <param name="x2">The second item.</param>
         /// <returns>The result of the operator.</returns>
         public static bool operator !=(XTItem x1, XTItem x2)
         {
@@ -56,17 +56,16 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Provides a new line item
+        /// Provides a new line item.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
         public static readonly XTItem NewLine = new XTItem(XTColor.Default, XTStyle.Default, Environment.NewLine);
 
         /// <summary>
-        /// Creates a new XT item
+        /// Initializes a new instance of the <see cref="XTItem"/> class.
         /// </summary>
-        /// <param name="color">Color of the item</param>
-        /// <param name="style">Style of the item</param>
-        /// <param name="text">Text</param>
+        /// <param name="color">Color of the item.</param>
+        /// <param name="style">Style of the item.</param>
+        /// <param name="text">Text.</param>
         public XTItem(XTColor color, XTStyle style, string text)
         {
             Color = color;
@@ -75,10 +74,10 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Creates a new XT item
+        /// Initializes a new instance of the <see cref="XTItem"/> class.
         /// </summary>
-        /// <param name="color">Color of the item</param>
-        /// <param name="text">Text</param>
+        /// <param name="color">Color of the item.</param>
+        /// <param name="text">Text.</param>
         public XTItem(XTColor color, string text)
         {
             Color = color;
@@ -96,27 +95,27 @@ namespace Cave.Console
         }
 
         /// <summary>
-        /// Obtains the Color of the item
+        /// Gets the Color of the item.
         /// </summary>
         public readonly XTColor Color;
 
         /// <summary>
-        /// Obtains the Style of the item
+        /// Gets the Style of the item.
         /// </summary>
         public readonly XTStyle Style;
 
         /// <summary>
-        /// Obtains the text of the item
+        /// Gets the text of the item.
         /// </summary>
         public readonly string Text;
 
         /// <summary>
-        /// Obtains the full data text repesentation of the item containing style color and text
+        /// Gets the full data text repesentation of the item containing style color and text.
         /// </summary>
         /// <returns></returns>
         public override string ToString()
         {
-            StringBuilder result = new StringBuilder();
+            var result = new StringBuilder();
             if (Style != XTStyle.Default)
             {
                 result.Append('<');
@@ -133,12 +132,12 @@ namespace Cave.Console
             return result.ToString();
         }
 
-        /// <summary>Determines whether the specified <see cref="System.Object" />, is equal to this instance.</summary>
-        /// <param name="obj">The <see cref="System.Object" /> to compare with this instance.</param>
-        /// <returns><c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
+        /// <summary>Determines whether the specified <see cref="object" />, is equal to this instance.</summary>
+        /// <param name="obj">The <see cref="object" /> to compare with this instance.</param>
+        /// <returns><c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
         public override bool Equals(object obj)
         {
-            XTItem other = obj as XTItem;
+            var other = obj as XTItem;
             if (ReferenceEquals(other, null))
             {
                 return false;
