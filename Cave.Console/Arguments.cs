@@ -14,27 +14,6 @@ namespace Cave.Console
     /// </summary>
     public sealed class Arguments : IEquatable<Arguments>
     {
-        /// <summary>
-        /// Provides options for the parser.
-        /// </summary>
-        public enum ParseOptions
-        {
-            /// <summary>
-            /// No options
-            /// </summary>
-            None = 0,
-
-            /// <summary>
-            /// Given arguments contain the command (and parameters and options)
-            /// </summary>
-            ContainsCommand = 0x01,
-
-            /// <summary>
-            /// Options are options even if the prefix is missing (--, /)
-            /// </summary>
-            AllowMissingPrefix = 0x02,
-        }
-
         #region static functionality
 
         /// <summary>
@@ -62,8 +41,8 @@ namespace Cave.Console
         /// <summary>
         /// Creates an <see cref="Arguments"/> instance from the specified string array.
         /// </summary>
-        /// <param name="args">The string array containing the parameters and options.</param>
         /// <param name="opt">Options for the parser.</param>
+        /// <param name="args">The string array containing the parameters and options.</param>
         /// <returns>Returns a new <see cref="Arguments"/> instance.</returns>
         public static Arguments FromArray(ParseOptions opt, params string[] args)
         {
@@ -75,8 +54,8 @@ namespace Cave.Console
         /// <summary>
         /// Creates an <see cref="Arguments"/> instance from the specified commandline string.
         /// </summary>
-        /// <param name="cmdLine">The string containing the full commandline.</param>
         /// <param name="opt">Options for the parser.</param>
+        /// <param name="cmdLine">The string containing the full commandline.</param>
         /// <exception cref="ArgumentException">Thrown if single and double quotes are used at the commandline simultaneously.</exception>
         /// <returns>Returns a new <see cref="Arguments"/> instance.</returns>
         public static Arguments FromString(ParseOptions opt, string cmdLine)
@@ -107,6 +86,27 @@ namespace Cave.Console
         {
         }
         #endregion
+
+        /// <summary>
+        /// Provides options for the parser.
+        /// </summary>
+        public enum ParseOptions
+        {
+            /// <summary>
+            /// No options
+            /// </summary>
+            None = 0,
+
+            /// <summary>
+            /// Given arguments contain the command (and parameters and options)
+            /// </summary>
+            ContainsCommand = 0x01,
+
+            /// <summary>
+            /// Options are options even if the prefix is missing (--, /)
+            /// </summary>
+            AllowMissingPrefix = 0x02,
+        }
 
         #region protected functionality
 
@@ -223,7 +223,7 @@ namespace Cave.Console
         public OptionCollection Options { get; private set; }
 
         /// <summary>
-        /// Provides all parameters found.
+        /// Gets all parameters found.
         /// </summary>
         public ParameterCollection Parameters { get; private set; }
 
@@ -251,7 +251,7 @@ namespace Cave.Console
 
 #if NET20 || NET35 || NET40 || NET45 || NET46 || NET47 || NETSTANDARD20
         /// <summary>
-        /// Ontains a <see cref="ProcessStartInfo"/>.
+        /// Gets a <see cref="ProcessStartInfo"/>.
         /// </summary>
         public ProcessStartInfo ProcessStartInfo => new ProcessStartInfo(Command, ToString(false));
 #else
@@ -354,6 +354,7 @@ namespace Cave.Console
         /// Checks whether a specified parameter is present or not. This function uses <see cref="StringComparison.InvariantCultureIgnoreCase" />.
         /// </summary>
         /// <param name="paramName">The parameter to search.</param>
+        /// <returns>Returns true if the specified parameter is present.</returns>
         public bool IsParameterPresent(string paramName)
         {
             return IsParameterPresent(paramName, StringComparison.OrdinalIgnoreCase);
@@ -364,6 +365,7 @@ namespace Cave.Console
         /// </summary>
         /// <param name="paramName">The parameter to search.</param>
         /// <param name="textComparison">Provides the used <see cref="StringComparison"/>.</param>
+        /// <returns>Returns true if the specified parameter is present.</returns>
         public bool IsParameterPresent(string paramName, StringComparison textComparison)
         {
             foreach (string parameter in Parameters)
@@ -380,7 +382,7 @@ namespace Cave.Console
         /// Checks whether all specified options are present. This function uses <see cref="StringComparison.InvariantCultureIgnoreCase" />.
         /// </summary>
         /// <param name="optionNames">The options to search.</param>
-        /// <returns></returns>
+        /// <returns>Returns true if options are present, false otherwise.</returns>
         public bool AreOptionsPresent(params string[] optionNames)
         {
             if (optionNames == null)
@@ -403,6 +405,7 @@ namespace Cave.Console
         /// Checks for presence of an option. This function uses <see cref="StringComparison.InvariantCultureIgnoreCase" />.
         /// </summary>
         /// <param name="optionName">The option to search.</param>
+        /// <returns>Returns true if the specified option is present.</returns>
         public bool IsOptionPresent(string optionName)
         {
             return IsOptionPresent(optionName, StringComparison.OrdinalIgnoreCase);
@@ -413,6 +416,7 @@ namespace Cave.Console
         /// </summary>
         /// <param name="optionName">The option to search.</param>
         /// <param name="textComparison">StringComparison to use.</param>
+        /// <returns>Returns true if the specified option is present.</returns>
         public bool IsOptionPresent(string optionName, StringComparison textComparison)
         {
             foreach (Option option in Options)
@@ -428,25 +432,11 @@ namespace Cave.Console
         /// <summary>
         /// Checks for presence of any (/help -help --help, /h, -h, /?, -?, ...) known help options.
         /// </summary>
-        public bool IsHelpOptionFound()
-        {
-            if (IsOptionPresent("help", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            if (IsOptionPresent("?", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            if (IsOptionPresent("h", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return false;
-        }
+        /// <returns>Returns true if any help option is found.</returns>
+        public bool IsHelpOptionFound() =>
+            IsOptionPresent("help", StringComparison.OrdinalIgnoreCase) ||
+            IsOptionPresent("?", StringComparison.OrdinalIgnoreCase) ||
+            IsOptionPresent("h", StringComparison.OrdinalIgnoreCase);
 
         #endregion
 
@@ -557,8 +547,8 @@ namespace Cave.Console
         /// <summary>
         /// Determines whether the specified object is equal to the current object.
         /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
+        /// <param name="obj">Object to check for equality.</param>
+        /// <returns>Returns true if the specified instance equals this.</returns>
         public override bool Equals(object obj)
         {
             return Equals(obj as Arguments);
@@ -567,17 +557,13 @@ namespace Cave.Console
         /// <summary>
         /// Determines whether the specified object is equal to the current object.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <param name="other">Arguments instance to check against.</param>
+        /// <returns>Returns true if the specified instance equals this.</returns>
         public bool Equals(Arguments other)
         {
-            if (ReferenceEquals(null, other))
-            {
-                return false;
-            }
-
-            return
-                (Count == other.Count) &&
+            return other is null
+                ? false
+                : (Count == other.Count) &&
                 (Command == other.Command) &&
                 Options.Equals(other.Options) &&
                 Parameters.Equals(other.Parameters);
@@ -586,7 +572,7 @@ namespace Cave.Console
         /// <summary>
         /// Gets the hash code for this instance.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Returns a hash code.</returns>
         public override int GetHashCode()
         {
             return Command.GetHashCode() ^ Options.GetHashCode() ^ Parameters.GetHashCode();

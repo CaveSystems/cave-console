@@ -82,48 +82,19 @@ namespace Cave.Console
         /// <param name="x1">The first item to add.</param>
         /// <param name="x2">The second item to add.</param>
         /// <returns>The result of the operator.</returns>
-        public static XT Add(XT x1, XT x2)
-        {
-            return new XT(x1, x2);
-        }
+        public static XT Add(XT x1, XT x2) => new XT(x1, x2);
 
         /// <summary>Implements the operator ==.</summary>
         /// <param name="x1">The first item.</param>
         /// <param name="x2">The second item.</param>
         /// <returns>The result of the operator.</returns>
-        public static bool operator ==(XT x1, XT x2)
-        {
-            if (ReferenceEquals(x1, null))
-            {
-                return ReferenceEquals(x2, null);
-            }
-
-            if (ReferenceEquals(x2, null))
-            {
-                return false;
-            }
-
-            return x1.ToString() == x2.ToString();
-        }
+        public static bool operator ==(XT x1, XT x2) => x1?.ToString() == x2?.ToString();
 
         /// <summary>Implements the operator !=.</summary>
         /// <param name="x1">The first item.</param>
         /// <param name="x2">The second item.</param>
         /// <returns>The result of the operator.</returns>
-        public static bool operator !=(XT x1, XT x2)
-        {
-            if (ReferenceEquals(x1, null))
-            {
-                return !ReferenceEquals(x2, null);
-            }
-
-            if (ReferenceEquals(x2, null))
-            {
-                return true;
-            }
-
-            return x1.ToString() != x2.ToString();
-        }
+        public static bool operator !=(XT x1, XT x2) => x1?.ToString() != x2?.ToString();
 
         /// <summary>
         /// Gets the first valid color.
@@ -138,8 +109,8 @@ namespace Cave.Console
         /// <summary>
         /// Unboxes a token.
         /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
+        /// <param name="token">Token to unbox.</param>
+        /// <returns>Returns the unboxed token name.</returns>
         static string Unbox(string token)
         {
             string text = token;
@@ -186,8 +157,8 @@ namespace Cave.Console
         /// <summary>
         /// Checks whether a specified string is a valid <see cref="XTColor"/>.
         /// </summary>
-        /// <param name="color"></param>
-        /// <returns></returns>
+        /// <param name="color">Name of the color.</param>
+        /// <returns>Returns true if the specified string is a valid color.</returns>
         public static bool IsColor(string color)
         {
             string name = Unbox(color).ToLower();
@@ -212,8 +183,8 @@ namespace Cave.Console
         /// <summary>
         /// Checks whether a specified string is a valid <see cref="XTStyle"/>.
         /// </summary>
-        /// <param name="style"></param>
-        /// <returns></returns>
+        /// <param name="style">The style name.</param>
+        /// <returns>Returns true if the specified string is a valid style name.</returns>
         public static bool IsStyle(string style)
         {
             string name = Unbox(style).ToLower();
@@ -233,13 +204,13 @@ namespace Cave.Console
         /// <summary>
         /// Gets the <see cref="XTColor"/> for the specified string.
         /// </summary>
-        /// <param name="color"></param>
-        /// <returns></returns>
+        /// <param name="color">The color name.</param>
+        /// <returns>Returns the color.</returns>
         public static XTColor GetColor(string color)
         {
             if (color == null)
             {
-                throw new ArgumentNullException("color");
+                throw new ArgumentNullException(nameof(color));
             }
 
             string unboxed = Unbox(color);
@@ -255,8 +226,8 @@ namespace Cave.Console
         /// <summary>
         /// Gets the <see cref="XTStyle"/> for the specified string.
         /// </summary>
-        /// <param name="style"></param>
-        /// <returns></returns>
+        /// <param name="style">The style name.</param>
+        /// <returns>Returns the style.</returns>
         public static XTStyle GetStyle(string style)
         {
             if (style == null)
@@ -272,8 +243,8 @@ namespace Cave.Console
         /// Converts the specified <see cref="XTColor"/> to a <see cref="ConsoleColor"/>.
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">An Exception is thrown if an invalid color is given.</exception>
-        /// <param name="color"></param>
-        /// <returns></returns>
+        /// <param name="color">The color.</param>
+        /// <returns>Returns the matching console color.</returns>
         public static ConsoleColor ToConsoleColor(XTColor color)
         {
             try
@@ -290,8 +261,8 @@ namespace Cave.Console
         /// Converts the specified <see cref="XTColor"/> to a <see cref="Color"/>.
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">An Exception is thrown if an invalid color string is given.</exception>
-        /// <param name="color"></param>
-        /// <returns></returns>
+        /// <param name="color">The color.</param>
+        /// <returns>Returns the matching color code.</returns>
         public static Color ToColor(XTColor color)
         {
             try
@@ -307,8 +278,8 @@ namespace Cave.Console
         /// <summary>
         /// Gets the string for a specified color.
         /// </summary>
-        /// <param name="color"></param>
-        /// <returns></returns>
+        /// <param name="color">The color.</param>
+        /// <returns>Returns the color token.</returns>
         public static string ToString(XTColor color)
         {
             return "<" + color.ToString() + ">";
@@ -317,8 +288,8 @@ namespace Cave.Console
         /// <summary>
         /// Gets the string for a specified style.
         /// </summary>
-        /// <param name="style"></param>
-        /// <returns></returns>
+        /// <param name="style">The style.</param>
+        /// <returns>Returns the style token.</returns>
         public static string ToString(XTStyle style)
         {
             return "<" + style.ToString() + ">";
@@ -327,7 +298,7 @@ namespace Cave.Console
         /// <summary>Formats the specified text.</summary>
         /// <param name="text">The text.</param>
         /// <param name="args">The arguments.</param>
-        /// <returns></returns>
+        /// <returns>Returns an array of XTItems.</returns>
         public static XTItem[] Format(XT text, params object[] args)
         {
             var result = new List<XTItem>();
@@ -363,8 +334,7 @@ namespace Cave.Console
                             }
                         }
                         {
-                            var x = obj as IXT;
-                            if (x != null)
+                            if (obj is IXT x)
                             {
                                 if (item.Color == XTColor.Default && item.Style == XTStyle.Default)
                                 {
@@ -381,7 +351,7 @@ namespace Cave.Console
                                 continue;
                             }
                         }
-                        if (ReferenceEquals(obj, null))
+                        if (obj is null)
                         {
                             result.Add(new XTItem(item.Color, item.Style, "<null>"));
                             continue;
@@ -474,7 +444,7 @@ namespace Cave.Console
         /// <summary>Formats the specified double.</summary>
         /// <param name="source">The source.</param>
         /// <param name="d">The double.</param>
-        /// <returns></returns>
+        /// <returns>Returns a new XTItem.</returns>
         public static XTItem Format(XTItem source, double d)
         {
             // maximum 5 digits
@@ -483,18 +453,7 @@ namespace Cave.Console
             XTColor color = source.Color;
             if (color == XTColor.Default)
             {
-                if (value > 0)
-                {
-                    color = XTColor.Cyan;
-                }
-                else if (value < 0)
-                {
-                    color = XTColor.Magenta;
-                }
-                else
-                {
-                    color = XTColor.White;
-                }
+                color = value > 0 ? XTColor.Cyan : value < 0 ? XTColor.Magenta : XTColor.White;
             }
             if (value % 100 != 0)
             {
@@ -519,7 +478,7 @@ namespace Cave.Console
         /// <summary>Formats the specified decimal.</summary>
         /// <param name="source">The source.</param>
         /// <param name="d">The decimal.</param>
-        /// <returns></returns>
+        /// <returns>Returns a new XTItem.</returns>
         public static XTItem Format(XTItem source, decimal d)
         {
             // maximum 5 digits
@@ -528,18 +487,7 @@ namespace Cave.Console
             XTColor color = source.Color;
             if (color == XTColor.Default)
             {
-                if (value > 0)
-                {
-                    color = XTColor.Cyan;
-                }
-                else if (value < 0)
-                {
-                    color = XTColor.Magenta;
-                }
-                else
-                {
-                    color = XTColor.White;
-                }
+                color = value > 0 ? XTColor.Cyan : value < 0 ? XTColor.Magenta : XTColor.White;
             }
 
             if (value % 100 != 0)
@@ -565,24 +513,13 @@ namespace Cave.Console
         /// <summary>Formats the specified value.</summary>
         /// <param name="source">The source.</param>
         /// <param name="value">The value.</param>
-        /// <returns></returns>
+        /// <returns>Returns a new XTItem.</returns>
         public static XTItem Format(XTItem source, long value)
         {
             XTColor color = source.Color;
             if (color == XTColor.Default)
             {
-                if (value > 0)
-                {
-                    color = XTColor.Cyan;
-                }
-                else if (value < 0)
-                {
-                    color = XTColor.Magenta;
-                }
-                else
-                {
-                    color = XTColor.White;
-                }
+                color = value > 0 ? XTColor.Cyan : value < 0 ? XTColor.Magenta : XTColor.White;
             }
             return new XTItem(color, value.ToString());
         }
@@ -590,24 +527,13 @@ namespace Cave.Console
         /// <summary>Formats the specified value.</summary>
         /// <param name="source">The source.</param>
         /// <param name="value">The value.</param>
-        /// <returns></returns>
+        /// <returns>Returns a new XTItem.</returns>
         public static XTItem Format(XTItem source, int value)
         {
             XTColor color = source.Color;
             if (color == XTColor.Default)
             {
-                if (value > 0)
-                {
-                    color = XTColor.Cyan;
-                }
-                else if (value < 0)
-                {
-                    color = XTColor.Magenta;
-                }
-                else
-                {
-                    color = XTColor.White;
-                }
+                color = value > 0 ? XTColor.Cyan : value < 0 ? XTColor.Magenta : XTColor.White;
             }
             return new XTItem(color, value.ToString());
         }
@@ -838,15 +764,10 @@ namespace Cave.Console
         /// <summary>
         /// Initializes a new instance of the <see cref="XT"/> class.
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="data">Data string.</param>
         public XT(string data)
         {
-            if (data == null)
-            {
-                throw new ArgumentNullException("data");
-            }
-
-            this.data = data;
+            this.data = data ?? throw new ArgumentNullException(nameof(data));
         }
 
         /// <summary>Initializes a new instance of the <see cref="XT"/> class.</summary>
@@ -891,28 +812,17 @@ namespace Cave.Console
         /// <summary>Gibt an, ob das aktuelle Objekt einem anderen Objekt des gleichen Typs entspricht.</summary>
         /// <param name="other">Ein Objekt, das mit diesem Objekt verglichen werden soll.</param>
         /// <returns>true, wenn das aktuelle Objekt gleich dem <paramref name="other" />-Parameter ist, andernfalls false.</returns>
-        public bool Equals(XT other)
-        {
-            if (ReferenceEquals(other, null))
-            {
-                return false;
-            }
-
-            return Text == other.Text;
-        }
+        public bool Equals(XT other) => Text == other?.Text;
 
         /// <summary>Determines whether the specified <see cref="object" />, is equal to this instance.</summary>
         /// <param name="obj">The <see cref="object" /> to compare with this instance.</param>
         /// <returns><c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as XT);
-        }
+        public override bool Equals(object obj) => Equals(obj as XT);
 
         /// <summary>
         /// Gets the parsable data of the xt.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Returns <see cref="Data"/>.</returns>
         public override string ToString()
         {
             return Data;
@@ -927,9 +837,6 @@ namespace Cave.Console
 
         /// <summary>Provides an eXtended Text string for this object.</summary>
         /// <returns>Returns a new XT instance with the description of this object.</returns>
-        public XT ToXT()
-        {
-            return this;
-        }
+        public XT ToXT() => this;
     }
 }

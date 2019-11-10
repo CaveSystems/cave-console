@@ -15,7 +15,7 @@ namespace Cave.Console
         /// <typeparam name="TKey">The type of the key.</typeparam>
         /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="item">The item.</param>
-        /// <returns></returns>
+        /// <returns>Returns a new <see cref="XT"/> instance.</returns>
         public static XT ToXT<TKey, TValue>(this KeyValuePair<TKey, TValue> item)
         {
             return XT.Format("{0}={1}", item.Key, item.Value);
@@ -25,7 +25,7 @@ namespace Cave.Console
         /// <typeparam name="TKey">The type of the key.</typeparam>
         /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="items">The items.</param>
-        /// <returns></returns>
+        /// <returns>Returns a new <see cref="XT"/> instance.</returns>
         public static XT ToXT<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> items)
         {
             var x = new XTBuilder();
@@ -38,28 +38,20 @@ namespace Cave.Console
 
         /// <summary>Gets the eXtended Text for a value.</summary>
         /// <param name="timeSpan">The time span.</param>
-        /// <returns></returns>
-        public static XT ToXT(this TimeSpan timeSpan)
-        {
-            if (timeSpan.Ticks > 0)
-            {
-                return new XT(XTColor.Cyan, XTStyle.Default, timeSpan.FormatTime());
-            }
-
-            if (timeSpan.Ticks < 0)
-            {
-                return new XT(XTColor.Magenta, XTStyle.Default, timeSpan.FormatTime());
-            }
-
-            return new XT(XTColor.White, XTStyle.Default, timeSpan.FormatTime());
-        }
+        /// <returns>Returns a new <see cref="XT"/> instance.</returns>
+        public static XT ToXT(this TimeSpan timeSpan) =>
+            timeSpan.Ticks > 0
+                ? new XT(XTColor.Cyan, XTStyle.Default, timeSpan.FormatTime())
+                : timeSpan.Ticks < 0
+                ? new XT(XTColor.Magenta, XTStyle.Default, timeSpan.FormatTime())
+                : new XT(XTColor.White, XTStyle.Default, timeSpan.FormatTime());
 
         /// <summary>
         /// Converts a exception to a loggable text message.
         /// </summary>
         /// <param name="ex">The <see cref="Exception"/>.</param>
         /// <param name="debug">Include debug information (stacktrace, data).</param>
-        /// <returns></returns>
+        /// <returns>Returns a new <see cref="XT"/> instance.</returns>
         public static XT ToXT(this Exception ex, bool debug = false)
         {
             // ignore AggregateException
@@ -296,6 +288,7 @@ namespace Cave.Console
 
         /// <summary>Retrieves the <see cref="XT"/> instance as HTML.</summary>
         /// <param name="items">The extended text.</param>
+        /// <returns>Returns the html code.</returns>
         public static string ToHtml(this IEnumerable<IXT> items)
         {
             var sb = new StringBuilder();
@@ -309,6 +302,7 @@ namespace Cave.Console
 
         /// <summary>Retrieves the <see cref="XT"/> instance as HTML.</summary>
         /// <param name="items">The extended text.</param>
+        /// <returns>Returns the html code.</returns>
         public static string ToHtml(this IEnumerable<XT> items)
         {
             var sb = new StringBuilder();

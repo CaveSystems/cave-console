@@ -21,39 +21,13 @@ namespace Cave.Console
         /// <param name="x1">The first item.</param>
         /// <param name="x2">The second item.</param>
         /// <returns>The result of the operator.</returns>
-        public static bool operator ==(XTItem x1, XTItem x2)
-        {
-            if (ReferenceEquals(x1, null))
-            {
-                return ReferenceEquals(x2, null);
-            }
-
-            if (ReferenceEquals(x2, null))
-            {
-                return false;
-            }
-
-            return x1.ToString() == x2.ToString();
-        }
+        public static bool operator ==(XTItem x1, XTItem x2) => x1?.ToString() == x2?.ToString();
 
         /// <summary>Implements the operator !=.</summary>
         /// <param name="x1">The first item.</param>
         /// <param name="x2">The second item.</param>
         /// <returns>The result of the operator.</returns>
-        public static bool operator !=(XTItem x1, XTItem x2)
-        {
-            if (ReferenceEquals(x1, null))
-            {
-                return !ReferenceEquals(x2, null);
-            }
-
-            if (ReferenceEquals(x2, null))
-            {
-                return true;
-            }
-
-            return x1.ToString() != x2.ToString();
-        }
+        public static bool operator !=(XTItem x1, XTItem x2) => x1?.ToString() != x2?.ToString();
 
         /// <summary>
         /// Provides a new line item.
@@ -112,7 +86,7 @@ namespace Cave.Console
         /// <summary>
         /// Gets the full data text repesentation of the item containing style color and text.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Returns a parsable string.</returns>
         public override string ToString()
         {
             var result = new StringBuilder();
@@ -135,22 +109,13 @@ namespace Cave.Console
         /// <summary>Determines whether the specified <see cref="object" />, is equal to this instance.</summary>
         /// <param name="obj">The <see cref="object" /> to compare with this instance.</param>
         /// <returns><c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
-        public override bool Equals(object obj)
-        {
-            var other = obj as XTItem;
-            if (ReferenceEquals(other, null))
-            {
-                return false;
-            }
-
-            return other.Color == Color && other.Style == Style && other.Text == Text;
-        }
+        public override bool Equals(object obj) =>
+            obj is XTItem other
+            ? other.Color == Color && other.Style == Style && other.Text == Text
+            : false;
 
         /// <summary>Returns a hash code for this instance.</summary>
         /// <returns>A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. </returns>
-        public override int GetHashCode()
-        {
-            return Text.GetHashCode() ^ Style.GetHashCode() ^ Color.GetHashCode();
-        }
+        public override int GetHashCode() => Text.GetHashCode() ^ Style.GetHashCode() ^ Color.GetHashCode();
     }
 }

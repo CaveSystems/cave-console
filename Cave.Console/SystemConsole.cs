@@ -11,48 +11,24 @@ namespace Cave.Console
     /// </summary>
     public static class SystemConsole
     {
-        class Item
-        {
-            public XTColor Color;
-            public XTStyle Style;
-            public bool Inverted;
-        }
-
         #region private implementation
-        static XTColor currentColor = XTColor.Gray;
-        static XTStyle currentStyle = XTStyle.Default;
-        static bool inverted = false;
+        static readonly Queue<Item> colorQueue = new Queue<Item>();
         static bool wordWrap = true;
         static bool useColor = true;
-        static bool waitUntilNewLine = false;
         static string buffer = string.Empty;
         static string title;
-        static Queue<Item> colorQueue = new Queue<Item>();
 
         static void InternalSetColors()
         {
-            if (inverted)
+            ConsoleColor selectedColor = TextColor == XTColor.Default ? ConsoleColor.Gray : XT.ToConsoleColor(TextColor);
+            if (Inverted)
             {
                 System.Console.ForegroundColor = ConsoleColor.Black;
-                if (currentColor == XTColor.Default)
-                {
-                    System.Console.BackgroundColor = ConsoleColor.Gray;
-                }
-                else
-                {
-                    System.Console.BackgroundColor = XT.ToConsoleColor(currentColor);
-                }
+                System.Console.BackgroundColor = selectedColor;
             }
             else
             {
-                if (currentColor == XTColor.Default)
-                {
-                    System.Console.ForegroundColor = ConsoleColor.Gray;
-                }
-                else
-                {
-                    System.Console.ForegroundColor = XT.ToConsoleColor(currentColor);
-                }
+                System.Console.ForegroundColor = selectedColor;
                 System.Console.BackgroundColor = ConsoleColor.Black;
             }
         }
@@ -64,8 +40,8 @@ namespace Cave.Console
                 System.Console.ForegroundColor = ConsoleColor.Gray;
                 System.Console.BackgroundColor = ConsoleColor.Black;
             }
-            currentColor = XTColor.Gray;
-            inverted = false;
+            TextColor = XTColor.Gray;
+            Inverted = false;
         }
 
         static void InternalNewLine()
@@ -91,7 +67,7 @@ namespace Cave.Console
                     return;
                 }
             }
-            if (waitUntilNewLine)
+            if (WaitUntilNewLine)
             {
                 System.Console.WriteLine(buffer);
                 buffer = string.Empty;
@@ -109,8 +85,8 @@ namespace Cave.Console
                 throw new ArgumentNullException("item");
             }
 
-            currentColor = item.Color;
-            currentStyle = item.Style;
+            TextColor = item.Color;
+            TextStyle = item.Style;
             return InternalWriteString(item.Text);
         }
 
@@ -137,7 +113,7 @@ namespace Cave.Console
             }
 
             int newLineCount = 0;
-            if (waitUntilNewLine)
+            if (WaitUntilNewLine)
             {
                 if (text.IndexOfAny(new char[] { '\r', '\n' }) < 0)
                 {
@@ -302,8 +278,7 @@ namespace Cave.Console
             ReInitialize();
         }
 
-        /// <summary>Initializes this instance.</summary>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <summary>(Re-)Initializes this instance.</summary>
         public static void ReInitialize()
         {
             if (!IsConsoleAvailable)
@@ -442,8 +417,8 @@ namespace Cave.Console
 
         /// <summary>Sets the key pressed event.</summary>
         /// <param name="keyPressedEvent">The key pressed event.</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="Exception">
+        /// <exception cref="ArgumentNullException">KeyPressedEvent is null.</exception>
+        /// <exception cref="InvalidOperationException">
         /// Application has no console!
         /// or
         /// Input thread already started!.
@@ -452,23 +427,18 @@ namespace Cave.Console
         {
             lock (SyncRoot)
             {
-                if (keyPressedEvent == null)
-                {
-                    throw new ArgumentNullException(nameof(keyPressedEvent));
-                }
-
                 if (!CanReadKey && IsConsoleAvailable)
                 {
-                    throw new Exception("Application has no console!");
+                    throw new InvalidOperationException("Application has no console!");
                 }
 
                 if (inputThread != null)
                 {
-                    throw new Exception("Input thread already started!");
+                    throw new InvalidOperationException("Input thread already started!");
                 }
 
+                inputEvent = keyPressedEvent ?? throw new ArgumentNullException(nameof(keyPressedEvent));
                 inputThread = new Thread(ConsoleReader);
-                inputEvent = keyPressedEvent;
                 inputThread.Start();
             }
         }
@@ -502,7 +472,7 @@ namespace Cave.Console
         public static bool ClearEOL { get; set; }
 
         /// <summary>
-        /// Enables / disables WordWrap.
+        /// Gets or sets a value indicating whether WordWrap is enabled or not.
         /// </summary>
         public static bool WordWrap { get => wordWrap & CanWordWrap; set => wordWrap = value; }
 
@@ -514,7 +484,7 @@ namespace Cave.Console
         /// <summary>
         /// Gets or sets a value indicating whether the console waits until each line is completed.
         /// </summary>
-        public static bool WaitUntilNewLine { get => waitUntilNewLine; set => waitUntilNewLine = value; }
+        public static bool WaitUntilNewLine { get; set; } = false;
 
         /// <summary>
         /// Gets / sets the width of a tab character in spaces.
@@ -527,12 +497,12 @@ namespace Cave.Console
         public static bool CanPosition { get; private set; }
 
         /// <summary>
-        /// Gets whether the console can print colors or not.
+        /// Gets a value indicating whether the console can print colors or not.
         /// </summary>
         public static bool CanColor { get; private set; }
 
         /// <summary>
-        /// Gets whether the console can do word wrapping or not.
+        /// Gets a value indicating whether the console can do word wrapping or not.
         /// </summary>
         public static bool CanWordWrap { get; private set; }
 
@@ -543,7 +513,7 @@ namespace Cave.Console
         public static bool CanReadKey { get; private set; }
 
         /// <summary>
-        /// Gets whether the console can do word wrapping or not.
+        /// Gets a value indicating whether the console can do word wrapping or not.
         /// </summary>
         public static bool CanTitle { get; private set; }
 
@@ -594,8 +564,8 @@ namespace Cave.Console
             }
         }
 
-        /// <summary>Ruft die nächste vom Benutzer gedrückte Zeichen- oder Funktionstaste ab.</summary>
-        /// <returns></returns>
+        /// <summary>Gets the next character or function key. This will block until a key is available.</summary>
+        /// <returns>Returns the next readable console key.</returns>
         public static ConsoleKeyInfo ReadKey()
         {
             if (inputThread != null)
@@ -645,29 +615,17 @@ namespace Cave.Console
         /// <summary>
         /// Gets or sets the current text color.
         /// </summary>
-        public static XTColor TextColor
-        {
-            get => currentColor;
-            set => currentColor = value;
-        }
+        public static XTColor TextColor { get; set; } = XTColor.Gray;
 
         /// <summary>
         /// Gets or sets the current text color.
         /// </summary>
-        public static XTStyle TextStyle
-        {
-            get => currentStyle;
-            set => currentStyle = value;
-        }
+        public static XTStyle TextStyle { get; set; } = XTStyle.Default;
 
         /// <summary>
-        /// Invert the color (use color as background highlighter).
+        /// Gets or sets a value indicating whether the color shall be inverted (use color as background highlighter).
         /// </summary>
-        public static bool Inverted
-        {
-            get => inverted;
-            set => inverted = value;
-        }
+        public static bool Inverted { get; set; } = false;
 
         /// <summary>
         /// Writes a string to the console (no formatting).
@@ -725,7 +683,7 @@ namespace Cave.Console
         {
             lock (SyncRoot)
             {
-                if (!ReferenceEquals(text, null))
+                if (text is object)
                 {
                     InternalWrite(text);
                 }
@@ -740,7 +698,7 @@ namespace Cave.Console
         {
             lock (SyncRoot)
             {
-                if (!ReferenceEquals(text, null))
+                if (text is object)
                 {
                     InternalWrite(text.ToXT());
                 }
@@ -857,10 +815,10 @@ namespace Cave.Console
         /// <summary>Pops the color from the stack.</summary>
         public static void PopColor()
         {
-            var i = colorQueue.Dequeue();
-            currentColor = i.Color;
-            currentStyle = i.Style;
-            inverted = i.Inverted;
+            Item i = colorQueue.Dequeue();
+            TextColor = i.Color;
+            TextStyle = i.Style;
+            Inverted = i.Inverted;
             if (CanColor)
             {
                 InternalSetColors();
@@ -870,7 +828,14 @@ namespace Cave.Console
         /// <summary>Pushes the color to the stack.</summary>
         public static void PushColor()
         {
-            colorQueue.Enqueue(new Item() { Color = currentColor, Style = currentStyle, Inverted = inverted });
+            colorQueue.Enqueue(new Item() { Color = TextColor, Style = TextStyle, Inverted = Inverted });
+        }
+
+        class Item
+        {
+            public XTColor Color;
+            public XTStyle Style;
+            public bool Inverted;
         }
     }
 }
