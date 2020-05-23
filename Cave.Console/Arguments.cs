@@ -430,6 +430,30 @@ namespace Cave.Console
         }
 
         /// <summary>
+        /// Gets the first matching option or null.
+        /// </summary>
+        /// <param name="optionNames">Option name to retrieve.</param>
+        /// <returns>Returns a matching option instance or null.</returns>
+        public Option GetFirstOption(params string[] optionNames)
+        {
+            foreach (var name in optionNames)
+            {
+                if (Options.Contains(name))
+                {
+                    return Options[name];
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the value of the first matching option or null.
+        /// </summary>
+        /// <param name="optionNames">Option name to retrieve.</param>
+        /// <returns>Returns the option value or null.</returns>
+        public string GetFirstOptionValue(params string[] optionNames) => GetFirstOption(optionNames)?.Value;
+
+        /// <summary>
         /// Checks for presence of any (/help -help --help, /h, -h, /?, -?, ...) known help options.
         /// </summary>
         /// <returns>Returns true if any help option is found.</returns>
