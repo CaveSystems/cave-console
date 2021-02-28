@@ -1,4 +1,3 @@
-using Cave.Console;
 using System;
 
 namespace Cave.Console
@@ -9,7 +8,9 @@ namespace Cave.Console
     [Flags]
     public enum LogConsoleFlags
     {
-        /// <summary>The default setting: with long level text, timestamp and source</summary>
+        /// <summary>
+        /// The default setting: with long level text, timestamp and source
+        /// </summary>
         Default = DisplayLongLevel | DisplayTimeStamp | DisplaySource,
 
         /// <summary>
