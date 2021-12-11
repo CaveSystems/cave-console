@@ -10,7 +10,8 @@ namespace Cave.Console
     /// </summary>
     public static class SystemConsole
     {
-        static readonly Queue<Item> ColorQueue = new Queue<Item>();
+        static readonly Queue<Item> colorQueue = new();
+        static readonly Queue<int> identQueue = new();
         static bool wordWrap = true;
         static bool useColor = true;
         static string buffer = string.Empty;
@@ -80,7 +81,7 @@ namespace Cave.Console
         {
             if (item == null)
             {
-                throw new ArgumentNullException("item");
+                throw new ArgumentNullException(nameof(item));
             }
 
             TextColor = item.Color;
@@ -92,7 +93,7 @@ namespace Cave.Console
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             var newLineCount = 0;
@@ -107,7 +108,7 @@ namespace Cave.Console
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             var newLineCount = 0;
@@ -181,7 +182,7 @@ namespace Cave.Console
 
                             InternalNewLine();
                             newLineCount++;
-                            System.Console.Write(new string(' ', LeadingSpace));
+                            System.Console.Write(new string(' ', Ident));
                             if (UseColor)
                             {
                                 PopColor();
@@ -202,7 +203,7 @@ namespace Cave.Console
                     }
 
                     InternalNewLine();
-                    System.Console.Write(new string(' ', LeadingSpace));
+                    System.Console.Write(new string(' ', Ident));
                     if (UseColor)
                     {
                         PopColor();
@@ -306,7 +307,7 @@ namespace Cave.Console
             try
             {
 #if NET20
-#elif NET35 || NET40 || NET45 || NET46 || NET47 || NETSTANDARD20
+#elif NET35 || NET40 || NET45 || NET50 || NETSTANDARD20
                 System.Console.TreatControlCAsInput = true;
 #else
 #error No code defined for the current framework or NETXX version define missing!
@@ -478,7 +479,13 @@ namespace Cave.Console
         /// <summary>
         /// The number of leading spaces after a wordwrap.
         /// </summary>
+        [Obsolete("Use Ident instead!")]
         public static int LeadingSpace = 2;
+
+        /// <summary>
+        /// The number of leading spaces after a wordwrap.
+        /// </summary>
+        public static int Ident { get => LeadingSpace; set => LeadingSpace = value; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [clear eol shall be used on newline].
@@ -499,12 +506,18 @@ namespace Cave.Console
         /// <summary>
         /// Gets or sets a value indicating whether the console waits until each line is completed.
         /// </summary>
-        public static bool WaitUntilNewLine { get; set; } = false;
+        public static bool WaitUntilNewLine { get; set; }
 
         /// <summary>
         /// Gets / sets the width of a tab character in spaces.
         /// </summary>
+        [Obsolete("Use Tabulator instead!")]
         public static int TabWidth = 2;
+
+        /// <summary>
+        /// Gets / sets the width of a tab character in spaces.
+        /// </summary>
+        public static int Tabulator { get => TabWidth; set => TabWidth = value; }
 
         /// <summary>
         /// Gets a value indicating whether the console supports cursor positioning or not.
@@ -636,7 +649,7 @@ namespace Cave.Console
         /// <summary>
         /// Gets or sets a value indicating whether the color shall be inverted (use color as background highlighter).
         /// </summary>
-        public static bool Inverted { get; set; } = false;
+        public static bool Inverted { get; set; }
 
         /// <summary>
         /// Writes a string to the console (no formatting).
@@ -835,7 +848,7 @@ namespace Cave.Console
         {
             lock (SyncRoot)
             {
-                var i = ColorQueue.Dequeue();
+                var i = colorQueue.Dequeue();
                 TextColor = i.Color;
                 TextStyle = i.Style;
                 Inverted = i.Inverted;
@@ -853,7 +866,29 @@ namespace Cave.Console
         {
             lock (SyncRoot)
             {
-                ColorQueue.Enqueue(new Item() { Color = TextColor, Style = TextStyle, Inverted = Inverted });
+                colorQueue.Enqueue(new Item() { Color = TextColor, Style = TextStyle, Inverted = Inverted });
+            }
+        }
+
+        /// <summary>
+        /// Pops the color from the stack.
+        /// </summary>
+        public static void PopIdent()
+        {
+            lock (SyncRoot)
+            {
+                Ident = identQueue.Dequeue();
+            }
+        }
+
+        /// <summary>
+        /// Pushes the color to the stack.
+        /// </summary>
+        public static void PushIdent()
+        {
+            lock (SyncRoot)
+            {
+                identQueue.Enqueue(Ident);
             }
         }
 

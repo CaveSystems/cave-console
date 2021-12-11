@@ -116,7 +116,7 @@ namespace Cave.Console
         public LogConsole(ILogTarget target)
         {
             Mode = LogReceiverMode.Continuous;
-            Target = target ?? throw new ArgumentNullException("target");
+            Target = target ?? throw new ArgumentNullException(nameof(target));
             Flags = LogConsoleFlags.Default;
         }
 
@@ -157,14 +157,11 @@ namespace Cave.Console
         /// </summary>
         /// <param name="flags">Flags.</param>
         /// <param name="level">The log level.</param>
-        public static LogConsole Create(LogConsoleFlags flags, LogLevel level = LogLevel.Information)
+        public static LogConsole Create(LogConsoleFlags flags, LogLevel level = LogLevel.Information) => new(new LogSystemConsole())
         {
-            return new LogConsole(new LogSystemConsole())
-            {
-                Flags = flags,
-                Level = level,
-            };
-        }
+            Flags = flags,
+            Level = level,
+        };
 
         /// <summary>
         /// Clears the terminal.
