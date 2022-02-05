@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 #pragma warning disable CS0618 // obsolete functions
-#pragma warning disable CS1416 // console.title.get not present at linux
 
 namespace Cave.Console
 {
@@ -115,8 +115,8 @@ namespace Cave.Console
 
             try
             {
-                System.Console.ForegroundColor = ConsoleColor.Gray;
-                System.Console.BackgroundColor = ConsoleColor.Black;
+                DefaultForegroundColor = System.Console.ForegroundColor;
+                DefaultBackgroundColor = System.Console.BackgroundColor;
                 CanColor = CanPosition;
             }
             catch
@@ -134,8 +134,6 @@ namespace Cave.Console
                         if (LatestVersion.VersionIsNewer(winVer, new Version(6, 2)))
                         {
                             wordWrap = false;
-
-                            // ClearEOL = true;
                         }
                     }
                     catch
@@ -281,8 +279,8 @@ namespace Cave.Console
         {
             if (UseColor)
             {
-                System.Console.ForegroundColor = ConsoleColor.Gray;
-                System.Console.BackgroundColor = ConsoleColor.Black;
+                System.Console.ForegroundColor = DefaultForegroundColor;
+                System.Console.BackgroundColor = DefaultBackgroundColor;
             }
             TextColor = XTColor.Gray;
             Inverted = false;
@@ -290,16 +288,16 @@ namespace Cave.Console
 
         static void InternalSetColors()
         {
-            var selectedColor = TextColor == XTColor.Default ? ConsoleColor.Gray : XT.ToConsoleColor(TextColor);
+            var selectedColor = TextColor == XTColor.Default ? DefaultForegroundColor : XT.ToConsoleColor(TextColor);
             if (Inverted)
             {
-                System.Console.ForegroundColor = ConsoleColor.Black;
+                System.Console.ForegroundColor = DefaultBackgroundColor;
                 System.Console.BackgroundColor = selectedColor;
             }
             else
             {
                 System.Console.ForegroundColor = selectedColor;
-                System.Console.BackgroundColor = ConsoleColor.Black;
+                System.Console.BackgroundColor = DefaultBackgroundColor;
             }
         }
 
@@ -446,10 +444,12 @@ namespace Cave.Console
 
         /// <summary>The number of leading spaces after a wordwrap.</summary>
         [Obsolete("Use Ident instead!")]
+        [SuppressMessage("Usage", "CA2211")]
         public static int LeadingSpace = 2;
 
         /// <summary>Gets / sets the width of a tab character in spaces.</summary>
         [Obsolete("Use Tabulator instead!")]
+        [SuppressMessage("Usage", "CA2211")]
         public static int TabWidth = 2;
 
         #endregion Public Fields
@@ -536,13 +536,14 @@ namespace Cave.Console
         /// <summary>Gets or sets the console title.</summary>
         public static string Title
         {
+            [SuppressMessage("Usage", "CA1416")]
             get
             {
                 if (CanTitle)
                 {
                     lock (SyncRoot)
                     {
-                        return System.Console.Title;
+                        title = System.Console.Title;
                     }
                 }
                 return title;
@@ -566,6 +567,12 @@ namespace Cave.Console
 
         /// <summary>Gets or sets a value indicating whether WordWrap is enabled or not.</summary>
         public static bool WordWrap { get => wordWrap & CanWordWrap; set => wordWrap = value; }
+
+        /// <summary>Gets or sets the default forground color.</summary>
+        public static ConsoleColor DefaultForegroundColor { get; set; }
+
+        /// <summary>Gets or sets the default background color.</summary>
+        public static ConsoleColor DefaultBackgroundColor { get; set; }
 
         #endregion Public Properties
 
@@ -727,6 +734,16 @@ namespace Cave.Console
             lock (SyncRoot)
             {
                 InternalResetColor();
+            }
+        }
+
+        /// <summary>Sets the default foreground to <see cref="ConsoleColor.Gray"/> and the background to <see cref="ConsoleColor.Black"/>.</summary>
+        public static void SetDefaultColors()
+        {
+            lock (SyncRoot)
+            {
+                DefaultForegroundColor = ConsoleColor.Gray;
+                DefaultBackgroundColor = ConsoleColor.Black;
             }
         }
 
