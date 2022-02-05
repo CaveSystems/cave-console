@@ -1,26 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net20;net35;net45;net5.0</TargetFrameworks>
-    <!--project-->
-    <RootNamespace>Cave.Console</RootNamespace>
-    <AssemblyOriginatorKeyFile>Cave.Console.snk</AssemblyOriginatorKeyFile>
-    <Product>CaveSystems Console Library</Product>
-    <PackageTags>CaveSystems Console SystemConsole</PackageTags>
-    <Description>CaveSystems Console Bibliothek. This packages contains tools for colored console output.</Description>
-    <PackageProjectUrl>https://github.com/CaveSystems/cave-console</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/CaveSystems/cave-console</RepositoryUrl>
-    <!--settings-->
-    <PackageReleaseNotes />
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <!-- nuget packages -->
-  <ItemGroup>
-    <PackageReference Include="Cave.Extensions" Version="2.1.4" />
-    <PackageReference Include="Cave.Logging" Version="2.1.0" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;net20;net35;net45;net5.0</TargetFrameworks>
+        <!--project-->
+        <RootNamespace>Cave.Console</RootNamespace>
+        <AssemblyOriginatorKeyFile>Cave.Console.snk</AssemblyOriginatorKeyFile>
+        <Product>CaveSystems Console Library</Product>
+        <PackageTags>CaveSystems Console SystemConsole</PackageTags>
+        <Description>CaveSystems Console Bibliothek. This packages contains tools for colored console output.</Description>
+        <PackageProjectUrl>https://github.com/CaveSystems/cave-console</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/CaveSystems/cave-console</RepositoryUrl>
+        <!--settings-->
+        <PackageReleaseNotes />
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <SignAssembly>true</SignAssembly>
+    </PropertyGroup>
+    <!-- nuget packages -->
+    <ItemGroup>
+        <PackageReference Include="Cave.Extensions" Version="2.1.4" />
+        <PackageReference Include="Cave.Logging" Version="2.1.0" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
 </Project>

@@ -30,6 +30,8 @@ namespace Cave.Console
 
         public int WriteString(string text) => SystemConsole.WriteString(text);
 
+        public void SetDefaultColors() => SystemConsole.SetDefaultColors();
+
         #endregion Public Methods
     }
 }

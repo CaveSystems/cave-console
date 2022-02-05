@@ -157,11 +157,19 @@ namespace Cave.Console
         /// </summary>
         /// <param name="flags">Flags.</param>
         /// <param name="level">The log level.</param>
-        public static LogConsole Create(LogConsoleFlags flags, LogLevel level = LogLevel.Information) => new(new LogSystemConsole())
+        public static LogConsole Create(LogConsoleFlags flags, LogLevel level = LogLevel.Information)
         {
-            Flags = flags,
-            Level = level,
-        };
+            var console = new LogSystemConsole();
+            if (!flags.HasFlag(LogConsoleFlags.DoNotResetColors))
+            {
+                console.SetDefaultColors();
+            }
+            return new(console)
+            {
+                Flags = flags,
+                Level = level,
+            };
+        }
 
         /// <summary>
         /// Clears the terminal.

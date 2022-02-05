@@ -26,21 +26,26 @@ namespace Cave.Console
         /// <summary>
         /// Display the creation timestamp of each message
         /// </summary>
-        DisplayTimeStamp = 1,
+        DisplayTimeStamp = 1 << 0,
 
         /// <summary>
         /// Display the log level of each message
         /// </summary>
-        DisplayOneLetterLevel = 2,
+        DisplayOneLetterLevel = 1 << 1,
 
         /// <summary>
         /// Display the source of each message
         /// </summary>
-        DisplaySource = 4,
+        DisplaySource = 1 << 2,
 
         /// <summary>
         /// Display the log level of each message (full name)
         /// </summary>
-        DisplayLongLevel = 8,
+        DisplayLongLevel = 1 << 3,
+
+        /// <summary>
+        /// Do not reset console colors to default
+        /// </summary>
+        DoNotResetColors = 1 << 4,
     }
 }
