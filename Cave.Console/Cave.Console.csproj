@@ -16,8 +16,8 @@
     </PropertyGroup>
     <!-- nuget packages -->
     <ItemGroup>
-        <PackageReference Include="Cave.Extensions" Version="2.1.4" />
-        <PackageReference Include="Cave.Logging" Version="2.1.0" />
+        <PackageReference Include="Cave.Extensions" Version="2.1.6" />
+        <PackageReference Include="Cave.Logging" Version="2.1.2" />
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
