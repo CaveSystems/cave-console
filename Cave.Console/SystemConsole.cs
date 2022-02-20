@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 
 #pragma warning disable CS0618 // obsolete functions
@@ -313,15 +314,15 @@ namespace Cave.Console
             return InternalWriteString(item.Text);
         }
 
-        static int InternalWrite(XT text)
+        static int InternalWrite(IList<XTItem> items)
         {
-            if (text == null)
+            if (items == null)
             {
-                throw new ArgumentNullException(nameof(text));
+                throw new ArgumentNullException(nameof(items));
             }
 
             var newLineCount = 0;
-            foreach (var item in text.Items)
+            foreach (var item in items)
             {
                 newLineCount += InternalWrite(item);
             }
@@ -774,11 +775,24 @@ namespace Cave.Console
         /// <summary>Writes a LogText to the console (with formatting).</summary>
         /// <param name="text">The <see cref="XT"/> instance to write.</param>
         /// <returns>Returns the number of newlines printed.</returns>
+        public static int Write(string text)
+        {
+            lock (SyncRoot)
+            {
+                var xt = (XT)text;
+                var items = xt.Items.Select(i => i.Color == XTColor.Default ? new XTItem(TextColor, i.Text) : i).ToList();
+                return InternalWrite(items);
+            }
+        }
+
+        /// <summary>Writes a LogText to the console (with formatting).</summary>
+        /// <param name="text">The <see cref="XT"/> instance to write.</param>
+        /// <returns>Returns the number of newlines printed.</returns>
         public static int Write(XT text)
         {
             lock (SyncRoot)
             {
-                return InternalWrite(text);
+                return InternalWrite(text.Items);
             }
         }
 
@@ -810,9 +824,9 @@ namespace Cave.Console
         {
             lock (SyncRoot)
             {
-                if (text is object)
+                if (text is not null)
                 {
-                    InternalWrite(text);
+                    InternalWrite(text.Items);
                 }
 
                 InternalNewLine();
@@ -825,9 +839,9 @@ namespace Cave.Console
         {
             lock (SyncRoot)
             {
-                if (text is object)
+                if (text is not null)
                 {
-                    InternalWrite(text.ToXT());
+                    InternalWrite(text.ToXT().Items);
                 }
 
                 InternalNewLine();
@@ -841,7 +855,8 @@ namespace Cave.Console
         {
             lock (SyncRoot)
             {
-                InternalWrite(XT.Format(text, args));
+                var items = XT.Format(text, args).Select(i => i.Color == XTColor.Default ? new XTItem(TextColor, i.Text) : i).ToList();
+                InternalWrite(items);
                 InternalNewLine();
             }
         }
