@@ -789,6 +789,19 @@ namespace Cave.Console
         /// <summary>Writes a LogText to the console (with formatting).</summary>
         /// <param name="text">The <see cref="XT"/> instance to write.</param>
         /// <returns>Returns the number of newlines printed.</returns>
+        public static int Write(string text)
+        {
+            lock (SyncRoot)
+            {
+                var xt = (XT)text;
+                var items = xt.Items.Select(i => i.Color == XTColor.Default ? new XTItem(TextColor, i.Text) : i).ToList();
+                return InternalWrite(items);
+            }
+        }
+
+        /// <summary>Writes a LogText to the console (with formatting).</summary>
+        /// <param name="text">The <see cref="XT"/> instance to write.</param>
+        /// <returns>Returns the number of newlines printed.</returns>
         public static int Write(XT text)
         {
             lock (SyncRoot)
