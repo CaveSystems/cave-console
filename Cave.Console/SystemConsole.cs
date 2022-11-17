@@ -778,10 +778,10 @@ namespace Cave.Console
         /// <returns>Returns the number of newlines printed.</returns>
         public static int Write(string text, params object[] args)
         {
-            var xt = XT.Format(text, args);
+            var xtItems = XT.Format(text, args);
             lock (SyncRoot)
             {
-                var items = xt.Items.Select(i => i.Color == XTColor.Default ? new XTItem(TextColor, i.Text) : i).ToList();
+                var items = xtItems.Select(i => i.Color == XTColor.Default ? new XTItem(TextColor, i.Text) : i).ToList();
                 return InternalWrite(items);
             }
         }
@@ -867,10 +867,10 @@ namespace Cave.Console
         /// <param name="args">The arguments.</param>
         public static void WriteLine(string text, params object[] args)
         {
-            var xt = XT.Format(text, args);
+            var xtItems = XT.Format(text, args);
             lock (SyncRoot)
             {
-                var items = xt.Items.Select(i => i.Color == XTColor.Default ? new XTItem(TextColor, i.Text) : i).ToList();
+                var items = xtItems.Select(i => i.Color == XTColor.Default ? new XTItem(TextColor, i.Text) : i).ToList();
                 InternalWrite(items);
                 InternalNewLine();
             }
