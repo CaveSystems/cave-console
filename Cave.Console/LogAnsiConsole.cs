@@ -1,18 +1,17 @@
-using System;
-using System.Text;
+﻿using System.Text;
 using Cave.Logging;
 
 namespace Cave.Console;
 
 /// <summary>Provides logging to the default system console instance.</summary>
-public class LogConsole : LogReceiver
+public class LogAnsiConsole : LogReceiver
 {
     #region Public Constructors
 
     /// <summary>Initializes a new instance of the <see cref="LogConsole"/> class.</summary>
-    public LogConsole() : base()
+    public LogAnsiConsole() : base()
     {
-        Writer = new LogConsoleWriter();
+        Writer = new LogAnsiConsoleWriter();
         MessageFormatter.MessageFormat = LogMessageFormatter.DefaultColored;
     }
 
@@ -23,8 +22,8 @@ public class LogConsole : LogReceiver
     /// <summary>Gets or sets the title of the logconsole.</summary>
     public string Title
     {
-        get => SystemConsole.Title;
-        set => SystemConsole.Title = value;
+        get => AnsiConsole.Title;
+        set => AnsiConsole.Title = value;
     }
 
     #endregion Public Properties
@@ -34,9 +33,9 @@ public class LogConsole : LogReceiver
     /// <summary>Creates a new logconsole object.</summary>
     /// <param name="flags">Flags.</param>
     /// <param name="level">The log level.</param>
-    public static LogConsole StartNew(LogConsoleFlags flags = LogConsoleFlags.Default, LogLevel level = LogLevel.Information)
+    public static LogAnsiConsole StartNew(LogConsoleFlags flags = LogConsoleFlags.Default, LogLevel level = LogLevel.Information)
     {
-        var console = new LogConsole();
+        var console = new LogAnsiConsole();
         console.Level = level;
         switch (flags)
         {
@@ -82,10 +81,10 @@ public class LogConsole : LogReceiver
     }
 
     /// <summary>Clears the terminal.</summary>
-    public void Clear() => SystemConsole.Clear();
+    public void Clear() => AnsiConsole.Clear();
 
     /// <inheritdoc/>
-    public override string ToString() => "LogConsole[" + Level + "]";
+    public override string ToString() => "LogAnsiConsole[" + Level + "]";
 
     #endregion Public Methods
 }

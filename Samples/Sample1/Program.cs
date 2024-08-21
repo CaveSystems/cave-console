@@ -1,9 +1,8 @@
-﻿using System.Diagnostics;
-using Cave;
+﻿using Cave;
 using Cave.Console;
 using Cave.Logging;
 
-namespace LogCollectorSample;
+namespace Sample1;
 
 class Program
 {
@@ -19,8 +18,11 @@ class Program
 
     static void Main(string[] args)
     {
+#if ANSI
+        var console = LogAnsiConsole.StartNew();
+#else
         var console = LogConsole.StartNew();
-
+#endif
         //prepare 3 logger instances for the test
         var sender1 = new Logger("Sender1");
         var sender2 = new Logger("Sender2");

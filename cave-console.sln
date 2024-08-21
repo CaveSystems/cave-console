@@ -12,12 +12,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		azure-pipelines.yml = azure-pipelines.yml
 		build.bat = build.bat
 		CodeMaid.config = CodeMaid.config
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 		LICENSE = LICENSE
+		Tests.RunSettings = Tests.RunSettings
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{5D672A45-4C7E-4608-A63A-38990A568C8F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample1", "Samples\Sample1\Sample1.csproj", "{76A62CEE-ACD4-42F8-9EC3-352C1E1E10FF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample2", "Samples\Sample2\Sample2.csproj", "{00550DD3-7275-4FC7-8CFE-2DEA885C3D81}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleAnsiConsole", "Samples\SampleAnsiConsole\SampleAnsiConsole.csproj", "{8E609734-8E6D-4F2E-83FB-65E40C1FCAFD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample1Ansi", "Samples\Sample1\Sample1Ansi.csproj", "{7D0476C7-EABF-469E-918B-1E4213366ABD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample2Ansi", "Samples\Sample2\Sample2Ansi.csproj", "{56453E08-8DB4-4069-A652-D62014B3753A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,12 +44,32 @@ Global
 		{76A62CEE-ACD4-42F8-9EC3-352C1E1E10FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76A62CEE-ACD4-42F8-9EC3-352C1E1E10FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76A62CEE-ACD4-42F8-9EC3-352C1E1E10FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00550DD3-7275-4FC7-8CFE-2DEA885C3D81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00550DD3-7275-4FC7-8CFE-2DEA885C3D81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00550DD3-7275-4FC7-8CFE-2DEA885C3D81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00550DD3-7275-4FC7-8CFE-2DEA885C3D81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E609734-8E6D-4F2E-83FB-65E40C1FCAFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E609734-8E6D-4F2E-83FB-65E40C1FCAFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E609734-8E6D-4F2E-83FB-65E40C1FCAFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E609734-8E6D-4F2E-83FB-65E40C1FCAFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D0476C7-EABF-469E-918B-1E4213366ABD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D0476C7-EABF-469E-918B-1E4213366ABD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D0476C7-EABF-469E-918B-1E4213366ABD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D0476C7-EABF-469E-918B-1E4213366ABD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56453E08-8DB4-4069-A652-D62014B3753A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56453E08-8DB4-4069-A652-D62014B3753A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56453E08-8DB4-4069-A652-D62014B3753A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56453E08-8DB4-4069-A652-D62014B3753A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{76A62CEE-ACD4-42F8-9EC3-352C1E1E10FF} = {5D672A45-4C7E-4608-A63A-38990A568C8F}
+		{00550DD3-7275-4FC7-8CFE-2DEA885C3D81} = {5D672A45-4C7E-4608-A63A-38990A568C8F}
+		{8E609734-8E6D-4F2E-83FB-65E40C1FCAFD} = {5D672A45-4C7E-4608-A63A-38990A568C8F}
+		{7D0476C7-EABF-469E-918B-1E4213366ABD} = {5D672A45-4C7E-4608-A63A-38990A568C8F}
+		{56453E08-8DB4-4069-A652-D62014B3753A} = {5D672A45-4C7E-4608-A63A-38990A568C8F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {159459F6-DAB3-4DF5-A6A4-1A7110398DDF}
