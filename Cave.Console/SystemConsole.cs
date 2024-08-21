@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using Cave.IO;
 using Cave.Logging;
 
 #pragma warning disable CS0618 // obsolete functions
@@ -33,23 +34,34 @@ public static class SystemConsole
     static readonly Queue<Item> colorQueue = new();
     static readonly Queue<int> identQueue = new();
     static string buffer = string.Empty;
-    static SystemConsoleKeyPressedDelegate inputEvent;
     static Thread inputThread;
     static string title;
     static bool useColor = true;
+    static bool forceColor = false;
     static bool wordWrap = true;
-    static ConsoleColor backgroundColor = (ConsoleColor)0xff;
-    static ConsoleColor foregroundColor = (ConsoleColor)0xff;
 
     #endregion Private Fields
 
+    /// <summary>KeyPressed event available after a call to <see cref="StartKeyPressedMonitoring"/>.</summary>
+    public static event SystemConsoleKeyPressedDelegate KeyPressed;
+
     #region Private Methods
+
+    static void InternalKeyPressed(ConsoleKeyInfo keyInfo) => KeyPressed?.Invoke(keyInfo);
 
     static void InternalClearToEOL() => InternalWriteString(new string(' ', System.Console.BufferWidth - System.Console.CursorLeft));
 
     /// <summary>(Re-)Initializes this instance.</summary>
     static void InternalInitialize()
     {
+        var env = Environment.GetEnvironmentVariables();
+        switch (env["color"])
+        {
+            case "always": forceColor = true; break;
+            case "off":
+            case "none": useColor = false; break;
+        }
+
         try
         {
             IsConsoleAvailable = System.Console.BufferHeight != 0 || System.Console.BufferWidth != 0;
@@ -61,7 +73,6 @@ public static class SystemConsole
 
         if (!IsConsoleAvailable)
         {
-            CanColor = false;
             CanPosition = false;
             CanWordWrap = false;
             CanReadKey = false;
@@ -201,20 +212,21 @@ public static class SystemConsole
         Thread.CurrentThread.IsBackground = true;
         Thread.CurrentThread.Name = "SystemConsole.Reader";
         Trace.TraceInformation("System Console Input Event Thread start.");
+        Exception lastException = null;
         while (inputThread != null)
         {
             try
             {
-                if (System.Console.KeyAvailable)
-                {
-                    inputEvent(System.Console.ReadKey(true));
-                }
+                InternalKeyPressed(System.Console.ReadKey(true));
             }
             catch (Exception ex)
             {
-                Trace.TraceError("Cannot read from console!\n{0}", ex);
+                if (lastException != ex)
+                {
+                    lastException = ex;
+                    Trace.TraceError("Cannot read from console!\n{0}", ex);
+                }
             }
-            Thread.Sleep(250);
         }
         Trace.TraceInformation("System Console Input Event Thread exit.");
     }
@@ -237,7 +249,7 @@ public static class SystemConsole
                     if (result.Length > 0)
                     {
                         System.Console.Write(keyInfo.KeyChar + " " + keyInfo.KeyChar);
-                        result = result.Substring(0, result.Length - 1);
+                        result = result[..^1];
                     }
                     continue;
                 }
@@ -266,7 +278,7 @@ public static class SystemConsole
                     if (result.Length > 0)
                     {
                         System.Console.Write(keyInfo.KeyChar);
-                        result = result.Substring(0, result.Length - 1);
+                        result = result[..^1];
                     }
                     continue;
                 }
@@ -281,6 +293,10 @@ public static class SystemConsole
     {
         TextColor = LogColor.Gray;
         Inverted = false;
+        if (UseColor)
+        {
+            InternalSetColors();
+        }
     }
 
     static void InternalSetColors()
@@ -288,13 +304,13 @@ public static class SystemConsole
         var selectedColor = TextColor == 0 ? DefaultForegroundColor : LogText.ToConsoleColor(TextColor);
         if (Inverted)
         {
-            if (foregroundColor != DefaultBackgroundColor) System.Console.ForegroundColor = foregroundColor = DefaultBackgroundColor;
-            if (backgroundColor != selectedColor) System.Console.BackgroundColor = backgroundColor = selectedColor;
+            System.Console.ForegroundColor = DefaultBackgroundColor;
+            System.Console.BackgroundColor = selectedColor;
         }
         else
         {
-            if (foregroundColor != selectedColor) System.Console.ForegroundColor = foregroundColor = selectedColor;
-            if (backgroundColor != DefaultBackgroundColor) System.Console.BackgroundColor = backgroundColor = DefaultBackgroundColor;
+            System.Console.ForegroundColor = selectedColor;
+            System.Console.BackgroundColor = DefaultBackgroundColor;
         }
     }
 
@@ -305,14 +321,18 @@ public static class SystemConsole
             throw new ArgumentNullException(nameof(item));
         }
 
-        TextColor = item.Color == 0 ? TextColor : item.Color;
         switch (item.Style)
         {
             case LogStyle.Unchanged: break;
             case LogStyle.Reset: InternalResetColor(); break;
             case LogStyle.Inverse: Inverted = true; break;
         }
-        InternalSetColors();
+        TextColor = item.Color == 0 ? TextColor : item.Color;
+
+        if (UseColor)
+        {
+            InternalSetColors();
+        }
         return InternalWriteString(item.Text);
     }
 
@@ -341,7 +361,7 @@ public static class SystemConsole
         var newLineCount = 0;
         if (WaitUntilNewLine)
         {
-            if (text.IndexOfAny(new char[] { '\r', '\n' }) < 0)
+            if (text.IndexOfAny(['\r', '\n']) < 0)
             {
                 buffer += text;
                 return newLineCount;
@@ -351,8 +371,8 @@ public static class SystemConsole
                 text = buffer + text;
             }
 
-            var print = text.Substring(0, text.LastIndexOfAny(new char[] { '\r', '\n' }) + 1);
-            buffer = text.Substring(print.Length);
+            var print = text[..(text.LastIndexOfAny(['\r', '\n']) + 1)];
+            buffer = text[print.Length..];
             if (UseColor || WordWrap)
             {
                 text = print;
@@ -361,7 +381,7 @@ public static class SystemConsole
             {
                 foreach (var line in print.SplitNewLine())
                 {
-                    var str = line.Replace("\t", new string(' ', TabWidth));
+                    var str = line.Replace("\t", new string(' ', Tabulator));
                     System.Console.WriteLine(str);
                     newLineCount++;
                 }
@@ -400,7 +420,7 @@ public static class SystemConsole
             {
                 if (CanPosition)
                 {
-                    if (wordWrap && (System.Console.CursorLeft + TabWidth >= System.Console.WindowWidth))
+                    if (wordWrap && (System.Console.CursorLeft + Tabulator >= System.Console.WindowWidth))
                     {
                         if (UseColor)
                         {
@@ -417,7 +437,7 @@ public static class SystemConsole
                     }
                     else
                     {
-                        System.Console.Write(new string(' ', TabWidth));
+                        System.Console.Write(new string(' ', Tabulator));
                     }
                 }
                 continue;
@@ -442,20 +462,6 @@ public static class SystemConsole
     }
 
     #endregion Private Methods
-
-    #region Public Fields
-
-    /// <summary>The number of leading spaces after a wordwrap.</summary>
-    [Obsolete("Use Ident instead!")]
-    [SuppressMessage("Usage", "CA2211")]
-    public static int LeadingSpace = 2;
-
-    /// <summary>Gets / sets the width of a tab character in spaces.</summary>
-    [Obsolete("Use Tabulator instead!")]
-    [SuppressMessage("Usage", "CA2211")]
-    public static int TabWidth = 2;
-
-    #endregion Public Fields
 
     #region Public Constructors
 
@@ -487,7 +493,7 @@ public static class SystemConsole
     public static bool ClearEOL { get; set; }
 
     /// <summary>The number of leading spaces after a wordwrap.</summary>
-    public static int Ident { get => LeadingSpace; set => LeadingSpace = value; }
+    public static int Ident { get; set; } = 2;
 
     /// <summary>Gets or sets a value indicating whether the color shall be inverted (use color as background highlighter).</summary>
     public static bool Inverted { get; set; }
@@ -528,7 +534,7 @@ public static class SystemConsole
     public static object SyncRoot { get; } = new object();
 
     /// <summary>Gets / sets the width of a tab character in spaces.</summary>
-    public static int Tabulator { get => TabWidth; set => TabWidth = value; }
+    public static int Tabulator { get; set; } = 2;
 
     /// <summary>Gets or sets the current text color.</summary>
     public static LogColor TextColor { get; set; } = LogColor.Gray;
@@ -563,13 +569,13 @@ public static class SystemConsole
     }
 
     /// <summary>Gets or sets a value indicating whether color is enabled or not.</summary>
-    public static bool UseColor { get => useColor & CanColor; set => useColor = value; }
+    public static bool UseColor { get => useColor && (CanColor || forceColor); set => useColor = value; }
 
     /// <summary>Gets or sets a value indicating whether the console waits until each line is completed.</summary>
     public static bool WaitUntilNewLine { get; set; }
 
     /// <summary>Gets or sets a value indicating whether WordWrap is enabled or not.</summary>
-    public static bool WordWrap { get => wordWrap & CanWordWrap; set => wordWrap = value; }
+    public static bool WordWrap { get => wordWrap && CanWordWrap; set => wordWrap = value; }
 
     /// <summary>Gets or sets the default forground color.</summary>
     public static ConsoleColor DefaultForegroundColor { get; set; }
@@ -750,25 +756,20 @@ public static class SystemConsole
         }
     }
 
-    /// <summary>Sets the key pressed event.</summary>
-    /// <param name="keyPressedEvent">The key pressed event.</param>
+    /// <summary>Starts the key pressed monitoring.</summary>
+    /// <remarks>Use the <see cref="KeyPressed"/> event for receifing pressed keys.</remarks>
     /// <exception cref="ArgumentNullException">KeyPressedEvent is null.</exception>
     /// <exception cref="InvalidOperationException">Application has no console! or Input thread already started!.</exception>
-    public static void SetKeyPressedEvent(SystemConsoleKeyPressedDelegate keyPressedEvent)
+    public static void StartKeyPressedMonitoring()
     {
         lock (SyncRoot)
         {
+            if (inputThread?.IsAlive == true) return;
             if (!CanReadKey && IsConsoleAvailable)
             {
                 throw new InvalidOperationException("Application has no console!");
             }
 
-            if (inputThread != null)
-            {
-                throw new InvalidOperationException("Input thread already started!");
-            }
-
-            inputEvent = keyPressedEvent ?? throw new ArgumentNullException(nameof(keyPressedEvent));
             inputThread = new Thread(InternalReader);
             inputThread.Start();
         }

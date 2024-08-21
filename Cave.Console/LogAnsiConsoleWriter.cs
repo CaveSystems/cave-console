@@ -3,13 +3,13 @@ using Cave.Logging;
 
 namespace Cave.Console;
 
-class LogConsoleWriter : LogWriter
+class LogAnsiConsoleWriter : LogWriter
 {
     #region Public Methods
 
     public override void Flush() { }
 
-    public override void Write(LogMessage message, IEnumerable<ILogText> items) => SystemConsole.Write(items);
+    public override void Write(LogMessage message, IEnumerable<ILogText> items) => AnsiConsole.Write(items);
 
     #endregion Public Methods
 }
