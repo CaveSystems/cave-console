@@ -4,10 +4,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using Cave;
 using Cave.IO;
 using Cave.Logging;
-
-#pragma warning disable CS0618 // obsolete functions
 
 namespace Cave.Console;
 
@@ -40,6 +39,8 @@ public static class SystemConsole
     static bool forceColor = false;
     static bool wordWrap = true;
 
+    static event SystemConsoleKeyPressedDelegate inputEvent;
+
     #endregion Private Fields
 
     /// <summary>KeyPressed event available after a call to <see cref="StartKeyPressedMonitoring"/>.</summary>
@@ -47,7 +48,11 @@ public static class SystemConsole
 
     #region Private Methods
 
-    static void InternalKeyPressed(ConsoleKeyInfo keyInfo) => KeyPressed?.Invoke(keyInfo);
+    static void InternalKeyPressed(ConsoleKeyInfo keyInfo)
+    {
+        KeyPressed?.Invoke(keyInfo);
+        inputEvent?.Invoke(keyInfo);
+    }
 
     static void InternalClearToEOL() => InternalWriteString(new string(' ', System.Console.BufferWidth - System.Console.CursorLeft));
 
@@ -142,7 +147,7 @@ public static class SystemConsole
             {
                 try
                 {
-                    // disable word wrap on windows 10
+                    // disable word wrap on windows 10 and newer
                     var winVer = Environment.OSVersion.Version;
                     if (LatestVersion.VersionIsNewer(winVer, new Version(6, 2)))
                     {
@@ -207,28 +212,38 @@ public static class SystemConsole
         }
     }
 
-    static void InternalReader()
+    static Logger log = new();
+
+    static void InputEventThread()
     {
         Thread.CurrentThread.IsBackground = true;
-        Thread.CurrentThread.Name = "SystemConsole.Reader";
-        Trace.TraceInformation("System Console Input Event Thread start.");
+        Thread.CurrentThread.Name = $"{nameof(SystemConsole)}.{nameof(InputEventThread)}";
+        log.Debug($"{Thread.CurrentThread.Name} id {Thread.CurrentThread.ManagedThreadId} <green>start<reset>.");
         Exception lastException = null;
+        var exceptionCounter = 0;
         while (inputThread != null)
         {
             try
             {
-                InternalKeyPressed(System.Console.ReadKey(true));
+                if (System.Console.KeyAvailable)
+                {
+                    InternalKeyPressed(System.Console.ReadKey(true));
+                    continue;
+                }
+                Thread.Sleep(1);
             }
             catch (Exception ex)
             {
+                var wait = ++exceptionCounter;
                 if (lastException != ex)
                 {
                     lastException = ex;
-                    Trace.TraceError("Cannot read from console!\n{0}", ex);
+                    log.Error(ex, $"Cannot read from console, retry in {((double)wait).FormatSeconds()}!");
                 }
+                Thread.Sleep(wait);
             }
         }
-        Trace.TraceInformation("System Console Input Event Thread exit.");
+        log.Debug($"{Thread.CurrentThread.Name} id {Thread.CurrentThread.ManagedThreadId} <red>exit<reset>.");
     }
 
     static string InternalReadLine()
@@ -241,7 +256,7 @@ public static class SystemConsole
         var result = string.Empty;
         while (true)
         {
-            var keyInfo = System.Console.ReadKey(true);
+            var keyInfo = ReadKey();
             switch (keyInfo.Key)
             {
                 case ConsoleKey.Backspace:
@@ -270,9 +285,11 @@ public static class SystemConsole
         var result = string.Empty;
         while (true)
         {
-            var keyInfo = System.Console.ReadKey(true);
+            var keyInfo = ReadKey();
             switch (keyInfo.Key)
             {
+                case ConsoleKey.Tab:
+                    continue;
                 case ConsoleKey.Backspace:
                 {
                     if (result.Length > 0)
@@ -466,7 +483,11 @@ public static class SystemConsole
     #region Public Constructors
 
     /// <summary>Initializes static members of the <see cref="SystemConsole"/> class.</summary>
-    static SystemConsole() => ReInitialize();
+    static SystemConsole()
+    {
+        Codepage.Init();
+        ReInitialize();
+    }
 
     #endregion Public Constructors
 
@@ -667,9 +688,17 @@ public static class SystemConsole
     /// <returns>Returns the next readable console key.</returns>
     public static ConsoleKeyInfo ReadKey()
     {
-        if (inputThread != null)
+        while (inputThread != null)
         {
-            throw new InvalidOperationException("An input reader was already connected to the SystemConsole!");
+            var done = new ManualResetEvent(false);
+            ConsoleKeyInfo? result = null;
+            KeyPressed += (c) =>
+            {
+                result = c;
+                done.Set();
+            };
+            done.WaitOne();
+            if (result.HasValue) return result.Value;
         }
 
         if (!CanReadKey)
@@ -687,11 +716,6 @@ public static class SystemConsole
     /// <returns>Returns the string read.</returns>
     public static string ReadLine()
     {
-        if (inputThread != null)
-        {
-            throw new InvalidOperationException("An input reader was already connected to the SystemConsole!");
-        }
-
         lock (SyncRoot)
         {
             return InternalReadLine();
@@ -702,11 +726,6 @@ public static class SystemConsole
     /// <returns>Returns the string read.</returns>
     public static string ReadPassword()
     {
-        if (inputThread != null)
-        {
-            throw new InvalidOperationException("An input reader was already connected to the SystemConsole!");
-        }
-
         lock (SyncRoot)
         {
             return InternalReadPassword();
@@ -719,21 +738,6 @@ public static class SystemConsole
         lock (SyncRoot)
         {
             InternalInitialize();
-        }
-    }
-
-    /// <summary>Removes the key pressed event.</summary>
-    /// <exception cref="InvalidOperationException">KeyPressedEvent was already removed!.</exception>
-    public static void RemoveKeyPressedEvent()
-    {
-        lock (SyncRoot)
-        {
-            var t = inputThread;
-            inputThread = null;
-            while (t != null && t.IsAlive)
-            {
-                Thread.Sleep(1);
-            }
         }
     }
 
@@ -770,8 +774,34 @@ public static class SystemConsole
                 throw new InvalidOperationException("Application has no console!");
             }
 
-            inputThread = new Thread(InternalReader);
+            inputThread = new Thread(InputEventThread);
             inputThread.Start();
+        }
+    }
+
+    /// <summary>Sets the key pressed event.</summary>
+    /// <param name="keyPressedEvent">The key pressed event.</param>
+    /// <exception cref="ArgumentNullException">KeyPressedEvent is null.</exception>
+    /// <exception cref="InvalidOperationException">Application has no console! or Input thread already started!.</exception>
+    [Obsolete($"Use {nameof(KeyPressed)} event and {nameof(StartKeyPressedMonitoring)}")]
+    public static void SetKeyPressedEvent(SystemConsoleKeyPressedDelegate keyPressedEvent)
+    {
+        lock (SyncRoot)
+        {
+            inputEvent = keyPressedEvent ?? throw new ArgumentNullException(nameof(keyPressedEvent));
+            StartKeyPressedMonitoring();
+        }
+    }
+
+    /// <summary>Removes the key pressed event.</summary>
+    /// <exception cref="InvalidOperationException">KeyPressedEvent was already removed!.</exception>
+    [Obsolete($"Use {nameof(KeyPressed)} event and {nameof(StartKeyPressedMonitoring)}")]
+    public static void RemoveKeyPressedEvent()
+    {
+        lock (SyncRoot)
+        {
+            if (inputEvent is null) throw new InvalidOperationException("KeyPressedEvent was already removed!");
+            inputEvent = null;
         }
     }
 

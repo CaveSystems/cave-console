@@ -3,44 +3,97 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading;
+using Cave.IO;
 using Cave.Logging;
-
-#pragma warning disable CS0618 // obsolete functions
 
 namespace Cave.Console;
 
+/// <summary>Implements a writer for writing characters to a stream using ansi escape codes, encoding, specific newline and endianess.</summary>
 public class AnsiWriter : IAnsiWriter
 {
-    string buffer = string.Empty;
-    LogColor currentLogTextColor;
+    #region Private Fields
 
-    TextWriter Writer { get; }
+    StringBuilder buffer = new();
+    LogColor currentLogTextColor;
+    Func<StringEncoding, NewLineMode, EndianType, DataWriter> GetWriter;
+
+    #endregion Private Fields
+
+    #region Private Properties
+
+    DataWriter Writer { get; set; }
+
+    #endregion Private Properties
+
+    #region Private Methods
+
+    void UpdateWriter(StringEncoding encoding = 0, NewLineMode newLineMode = 0, EndianType endianType = 0)
+    {
+        if (Writer != null)
+        {
+            if (encoding == 0) encoding = Writer.StringEncoding;
+            if (newLineMode == 0) newLineMode = Writer.NewLineMode;
+            if (endianType == 0) endianType = Writer.EndianType;
+        }
+        Writer = GetWriter(encoding, newLineMode, endianType);
+    }
+
+    #endregion Private Methods
+
+    #region Public Constructors
+
+    /// <summary>Creates a new instance.</summary>
+    /// <param name="stream"></param>
+    public AnsiWriter(Stream stream) : this((StringEncoding encoding, NewLineMode newLineMode, EndianType endianType) => new DataWriter(stream, encoding, newLineMode, endianType)) { }
+
+    /// <summary>Creates a new instance.</summary>
+    /// <param name="getWriter"></param>
+    public AnsiWriter(Func<StringEncoding, NewLineMode, EndianType, DataWriter> getWriter)
+    {
+        GetWriter = getWriter;
+        UpdateWriter();
+    }
+
+    #endregion Public Constructors
+
+    #region Public Properties
 
     /// <inheritdoc/>
     public CultureInfo CurrentCulture { get; set; } = Thread.CurrentThread.CurrentCulture;
 
+    /// <summary>Gets or sets the endian encoder type.</summary>
+    public EndianType EndianType { get => Writer.EndianType; set => UpdateWriter(endianType: value); }
+
+    /// <summary>Gets or sets the new line mode used.</summary>
+    public NewLineMode NewLineMode { get => Writer.NewLineMode; set => UpdateWriter(newLineMode: value); }
+
+    /// <summary>Sends an ansi reset after each newline.</summary>
+    public bool ResetOnNewLine { get; set; } = true;
+
+    /// <summary>Gets or sets encoding to use for characters and strings.</summary>
+    public StringEncoding StringEncoding { get => Writer.StringEncoding; set => UpdateWriter(encoding: value); }
+
     /// <summary>Gets or sets a value indicating whether the console waits until each line is completed.</summary>
-    public static bool WaitUntilNewLine { get; set; }
+    public bool WaitUntilNewLine { get; set; }
 
-    public static string NewLine { get; set; } = Platform.Type switch { PlatformType.Windows or PlatformType.Xbox or PlatformType.CompactFramework => "\r\n", _ => "\n" };
+    #endregion Public Properties
 
-    public static bool ResetOnNewLine { get; set; } = true;
-
-    public AnsiWriter(TextWriter writer) => Writer = writer;
+    #region Public Methods
 
     /// <inheritdoc/>
-    public void Write(Ansi ansi) => Writer.Write(ansi.ToString());
+    public void Write(Ansi ansi) => Writer.Write(ansi.Buffer);
 
     /// <inheritdoc/>
-    public int Write(IFormattable formattable)
+    public void Write(IFormattable formattable)
     {
         var text = formattable.ToString(null, CurrentCulture);
-        return Write(text);
+        Write(text);
     }
 
     /// <inheritdoc/>
-    public int Write(ILogText item)
+    public void Write(ILogText item)
     {
         if (item == null)
         {
@@ -73,48 +126,47 @@ public class AnsiWriter : IAnsiWriter
             case LogStyle.Inverse: Write(Ansi.Inverse); break;
         }
 
-        return Write(item.Text);
+        Write(item.Text);
     }
 
     /// <inheritdoc/>
-    public int Write(IEnumerable<ILogText> items)
+    public void Write(IEnumerable<ILogText> items)
     {
         if (items == null)
         {
             throw new ArgumentNullException(nameof(items));
         }
 
-        var newLineCount = 0;
         foreach (var item in items)
         {
-            newLineCount += Write(item);
+            Write(item);
         }
-        return newLineCount;
     }
 
     /// <inheritdoc/>
-    public int Write(string text)
+    public void Write(string text)
     {
         if (text == null)
         {
             throw new ArgumentNullException(nameof(text));
         }
 
-        var newLineCount = 0;
         if (WaitUntilNewLine)
         {
             if (text.IndexOfAny(['\r', '\n']) < 0)
             {
-                buffer += text;
-                return newLineCount;
+                buffer.Append(text);
+                return;
             }
             if (buffer.Length > 0)
             {
-                text = buffer + text;
+                buffer.Append(text);
+                text = buffer.ToString();
+                buffer = new();
             }
 
             var print = text[..(text.LastIndexOfAny(new char[] { '\r', '\n' }) + 1)];
-            buffer = text[print.Length..];
+            buffer.Append(text[print.Length..]);
             text = print;
         }
 
@@ -125,18 +177,16 @@ public class AnsiWriter : IAnsiWriter
             if (part == "\r")
             {
                 newline = true;
-                if (ResetOnNewLine) Writer.Write(Ansi.Reset);
-                Writer.Write(NewLine);
-                newLineCount++;
+                if (ResetOnNewLine) Write(Ansi.Reset);
+                Writer.WriteLine();
                 continue;
             }
             if (part == "\n")
             {
                 if (!newline)
                 {
-                    if (ResetOnNewLine) Writer.Write(Ansi.Reset);
-                    Writer.Write(NewLine);
-                    newLineCount++;
+                    if (ResetOnNewLine) Write(Ansi.Reset);
+                    Writer.WriteLine();
                 }
                 newline = false;
                 continue;
@@ -144,6 +194,17 @@ public class AnsiWriter : IAnsiWriter
             newline = false;
             Writer.Write(part);
         }
-        return newLineCount;
     }
+
+    /// <inheritdoc/>
+    public void WriteLine() => Writer.WriteLine();
+
+    /// <inheritdoc/>
+    public void WriteLine(string text)
+    {
+        Write(text);
+        Writer.WriteLine();
+    }
+
+    #endregion Public Methods
 }
