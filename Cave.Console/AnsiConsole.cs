@@ -1,25 +1,59 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Text;
-using System.Threading;
-using Cave.IO;
 using Cave.Logging;
-
-#pragma warning disable CS0618 // obsolete functions
 
 namespace Cave.Console;
 
+/// <summary></summary>
 public static class AnsiConsole
 {
-    static readonly object SyncRoot = new();
-    static readonly AnsiWriter Output = new AnsiWriter(System.Console.Out);
-    static readonly AnsiWriter Error = new AnsiWriter(System.Console.Error);
+    #region Private Fields
 
+    static string title;
+
+    #endregion Private Fields
+
+    #region Public Properties
+
+    /// <summary>Gets or sets the used culture to format strings.</summary>
     public static CultureInfo CurrentCulture { get => Output.CurrentCulture; set => Output.CurrentCulture = Error.CurrentCulture = value; }
 
-    public static string Title { get; set; }
+    /// <summary>Writes to <see cref="StandardError"/></summary>
+    /// <remarks>Functions of this writer are not locked. If you need multi thread access use <see cref="SyncRoot"/> for locking!</remarks>
+    public static AnsiWriter Error { get; } = new AnsiWriter(StandardError.GetWriter);
+
+    /// <summary>Writes to <see cref="StandardOutput"/></summary>
+    /// <remarks>Functions of this writer are not locked. If you need multi thread access use <see cref="SyncRoot"/> for locking!</remarks>
+    public static AnsiWriter Output { get; } = new AnsiWriter(StandardOutput.GetWriter);
+
+    /// <summary>Multiuser sync root. This is used by all static functions of this class.</summary>
+    public static object SyncRoot { get; } = new();
+
+    /// <summary>Gets or sets the console title</summary>
+    public static string Title
+    {
+        get => title;
+        set
+        {
+            lock (SyncRoot)
+            {
+                var ansi = new Ansi(title = value, Output.StringEncoding);
+                if (Platform.IsMicrosoft)
+                {
+                    Write(Ansi.Control.Title(title));
+                }
+                else
+                {
+                    Write(Ansi.Control.Title($"0;{title}"));
+                }
+            }
+        }
+    }
+
+    #endregion Public Properties
+
+    #region Public Methods
 
     /// <summary>Clears the console.</summary>
     public static void Clear()
@@ -40,38 +74,40 @@ public static class AnsiConsole
     }
 
     /// <inheritdoc/>
-    public static int Write(IEnumerable<ILogText> items)
+    public static void Write(IEnumerable<ILogText> items)
     {
         lock (SyncRoot)
         {
-            return Output.Write(items);
+            Output.Write(items);
         }
     }
 
     /// <inheritdoc/>
-    public static int Write(IFormattable formattable)
+    public static void Write(IFormattable formattable)
     {
         lock (SyncRoot)
         {
-            return Output.Write(formattable);
+            Output.Write(formattable);
         }
     }
 
     /// <inheritdoc/>
-    public static int Write(ILogText item)
+    public static void Write(ILogText item)
     {
         lock (SyncRoot)
         {
-            return Output.Write(item);
+            Output.Write(item);
         }
     }
 
     /// <inheritdoc/>
-    public static int Write(string text)
+    public static void Write(string text)
     {
         lock (SyncRoot)
         {
-            return Output.Write(text);
+            Output.Write(text);
         }
     }
+
+    #endregion Public Methods
 }

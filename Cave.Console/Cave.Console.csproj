@@ -27,4 +27,29 @@
         <PackageReference Include="Cave.Extensions" Version="3.0.13" />
         <PackageReference Include="Cave.Logging" Version="3.0.7" />
     </ItemGroup>
+
+    <!-- framework includes -->
+    <Choose>
+        <When Condition=" '$(TargetFramework)'=='net20' OR '$(TargetFramework)'=='net35' ">
+            <ItemGroup>
+                <Reference Include="System" />
+            </ItemGroup>
+        </When>
+
+        <When Condition=" $(TargetFramework.StartsWith('net4')) ">
+            <ItemGroup>
+                <Reference Include="System" />
+                <Reference Include="System.Core" />
+                <Reference Include="Microsoft.CSharp" />
+            </ItemGroup>
+        </When>
+
+        <Otherwise>
+            <!-- > net 5.0 -->
+            <ItemGroup>
+                <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0"/>
+            </ItemGroup>
+        </Otherwise>
+    </Choose>
+
 </Project>
