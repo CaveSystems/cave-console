@@ -10,7 +10,7 @@ public static class AnsiConsole
 {
     #region Private Fields
 
-    static string title;
+    static string title = string.Empty;
 
     #endregion Private Fields
 
@@ -36,18 +36,17 @@ public static class AnsiConsole
         get => title;
         set
         {
-            lock (SyncRoot)
+            var newTitle = value ?? throw new ArgumentNullException(nameof(value));
+            var ansi = new Ansi(newTitle, Output.StringEncoding);
+            if (Platform.IsMicrosoft)
             {
-                var ansi = new Ansi(title = value, Output.StringEncoding);
-                if (Platform.IsMicrosoft)
-                {
-                    Write(Ansi.Control.Title(title));
-                }
-                else
-                {
-                    Write(Ansi.Control.Title($"0;{title}"));
-                }
+                Write(Ansi.Control.Title(ansi));
             }
+            else
+            {
+                Write(Ansi.Control.Title($"0;{ansi}"));
+            }
+            title = newTitle;
         }
     }
 

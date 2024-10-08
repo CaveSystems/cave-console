@@ -15,7 +15,7 @@ public static class SystemConsole
 {
     #region Private Classes
 
-    class Item
+    sealed class Item
     {
         #region Public Fields
 
@@ -30,28 +30,57 @@ public static class SystemConsole
 
     #region Private Fields
 
-    static readonly Queue<Item> colorQueue = new();
-    static readonly Queue<int> identQueue = new();
+    static readonly Queue<Item> ColorQueue = new();
+    static readonly Queue<int> IdentQueue = new();
+    static readonly Logger Log = new();
+    static readonly string Star = "*";
     static string buffer = string.Empty;
-    static Thread inputThread;
-    static string title;
+    static bool forceColor;
+    static Thread? inputThread;
+    static string title = string.Empty;
     static bool useColor = true;
-    static bool forceColor = false;
     static bool wordWrap = true;
-
-    static event SystemConsoleKeyPressedDelegate inputEvent;
 
     #endregion Private Fields
 
-    /// <summary>KeyPressed event available after a call to <see cref="StartKeyPressedMonitoring"/>.</summary>
-    public static event SystemConsoleKeyPressedDelegate KeyPressed;
+    #region Private Events
+
+    static event SystemConsoleKeyPressedDelegate? InputEvent;
+
+    #endregion Private Events
 
     #region Private Methods
 
-    static void InternalKeyPressed(ConsoleKeyInfo keyInfo)
+    static void InputEventThread()
     {
-        KeyPressed?.Invoke(keyInfo);
-        inputEvent?.Invoke(keyInfo);
+        Thread.CurrentThread.IsBackground = true;
+        Thread.CurrentThread.Name = $"{nameof(SystemConsole)}.{nameof(InputEventThread)}";
+        Log.Debug($"{Thread.CurrentThread.Name} id {Thread.CurrentThread.ManagedThreadId} <green>start<reset>.");
+        Exception? lastException = null;
+        var exceptionCounter = 0;
+        while (inputThread != null)
+        {
+            try
+            {
+                if (System.Console.KeyAvailable)
+                {
+                    InternalKeyPressed(System.Console.ReadKey(true));
+                    continue;
+                }
+                Thread.Sleep(1);
+            }
+            catch (Exception ex)
+            {
+                var wait = ++exceptionCounter;
+                if (lastException != ex)
+                {
+                    lastException = ex;
+                    Log.Error(ex, $"Cannot read from console, retry in {((double)wait).FormatSeconds()}!");
+                }
+                Thread.Sleep(wait);
+            }
+        }
+        Log.Debug($"{Thread.CurrentThread.Name} id {Thread.CurrentThread.ManagedThreadId} <red>exit<reset>.");
     }
 
     static void InternalClearToEOL() => InternalWriteString(new string(' ', System.Console.BufferWidth - System.Console.CursorLeft));
@@ -178,6 +207,12 @@ public static class SystemConsole
         }
     }
 
+    static void InternalKeyPressed(ConsoleKeyInfo keyInfo)
+    {
+        KeyPressed?.Invoke(keyInfo);
+        InputEvent?.Invoke(keyInfo);
+    }
+
     static void InternalNewLine()
     {
         InternalResetColor();
@@ -210,40 +245,6 @@ public static class SystemConsole
         {
             System.Console.WriteLine();
         }
-    }
-
-    static Logger log = new();
-
-    static void InputEventThread()
-    {
-        Thread.CurrentThread.IsBackground = true;
-        Thread.CurrentThread.Name = $"{nameof(SystemConsole)}.{nameof(InputEventThread)}";
-        log.Debug($"{Thread.CurrentThread.Name} id {Thread.CurrentThread.ManagedThreadId} <green>start<reset>.");
-        Exception lastException = null;
-        var exceptionCounter = 0;
-        while (inputThread != null)
-        {
-            try
-            {
-                if (System.Console.KeyAvailable)
-                {
-                    InternalKeyPressed(System.Console.ReadKey(true));
-                    continue;
-                }
-                Thread.Sleep(1);
-            }
-            catch (Exception ex)
-            {
-                var wait = ++exceptionCounter;
-                if (lastException != ex)
-                {
-                    lastException = ex;
-                    log.Error(ex, $"Cannot read from console, retry in {((double)wait).FormatSeconds()}!");
-                }
-                Thread.Sleep(wait);
-            }
-        }
-        log.Debug($"{Thread.CurrentThread.Name} id {Thread.CurrentThread.ManagedThreadId} <red>exit<reset>.");
     }
 
     static string InternalReadLine()
@@ -302,7 +303,7 @@ public static class SystemConsole
                 case ConsoleKey.Enter: return result;
             }
             result += keyInfo.KeyChar;
-            System.Console.Write("*");
+            System.Console.Write(Star);
         }
     }
 
@@ -491,6 +492,13 @@ public static class SystemConsole
 
     #endregion Public Constructors
 
+    #region Public Events
+
+    /// <summary>KeyPressed event available after a call to <see cref="StartKeyPressedMonitoring"/>.</summary>
+    public static event SystemConsoleKeyPressedDelegate? KeyPressed;
+
+    #endregion Public Events
+
     #region Public Properties
 
     /// <summary>Gets a value indicating whether the console can print colors or not.</summary>
@@ -512,6 +520,12 @@ public static class SystemConsole
     /// <summary>Gets or sets a value indicating whether [clear eol shall be used on newline].</summary>
     /// <value><c>true</c> if [clear eol]; otherwise, <c>false</c>.</value>
     public static bool ClearEOL { get; set; }
+
+    /// <summary>Gets or sets the default background color.</summary>
+    public static ConsoleColor DefaultBackgroundColor { get; set; }
+
+    /// <summary>Gets or sets the default forground color.</summary>
+    public static ConsoleColor DefaultForegroundColor { get; set; }
 
     /// <summary>The number of leading spaces after a wordwrap.</summary>
     public static int Ident { get; set; } = 2;
@@ -598,12 +612,6 @@ public static class SystemConsole
     /// <summary>Gets or sets a value indicating whether WordWrap is enabled or not.</summary>
     public static bool WordWrap { get => wordWrap && CanWordWrap; set => wordWrap = value; }
 
-    /// <summary>Gets or sets the default forground color.</summary>
-    public static ConsoleColor DefaultForegroundColor { get; set; }
-
-    /// <summary>Gets or sets the default background color.</summary>
-    public static ConsoleColor DefaultBackgroundColor { get; set; }
-
     #endregion Public Properties
 
     #region Public Methods
@@ -646,7 +654,7 @@ public static class SystemConsole
     {
         lock (SyncRoot)
         {
-            var i = colorQueue.Dequeue();
+            var i = ColorQueue.Dequeue();
             TextColor = i.Color;
             TextStyle = i.Style;
             Inverted = i.Inverted;
@@ -662,7 +670,7 @@ public static class SystemConsole
     {
         lock (SyncRoot)
         {
-            Ident = identQueue.Dequeue();
+            Ident = IdentQueue.Dequeue();
         }
     }
 
@@ -671,7 +679,7 @@ public static class SystemConsole
     {
         lock (SyncRoot)
         {
-            colorQueue.Enqueue(new Item() { Color = TextColor, Style = TextStyle, Inverted = Inverted });
+            ColorQueue.Enqueue(new Item() { Color = TextColor, Style = TextStyle, Inverted = Inverted });
         }
     }
 
@@ -680,7 +688,7 @@ public static class SystemConsole
     {
         lock (SyncRoot)
         {
-            identQueue.Enqueue(Ident);
+            IdentQueue.Enqueue(Ident);
         }
     }
 
@@ -741,6 +749,18 @@ public static class SystemConsole
         }
     }
 
+    /// <summary>Removes the key pressed event.</summary>
+    /// <exception cref="InvalidOperationException">KeyPressedEvent was already removed!.</exception>
+    [Obsolete($"Use {nameof(KeyPressed)} event and {nameof(StartKeyPressedMonitoring)}")]
+    public static void RemoveKeyPressedEvent()
+    {
+        lock (SyncRoot)
+        {
+            if (InputEvent is null) throw new InvalidOperationException("KeyPressedEvent was already removed!");
+            InputEvent = null;
+        }
+    }
+
     /// <summary>Resets the color to default value.</summary>
     public static void ResetColor()
     {
@@ -760,6 +780,20 @@ public static class SystemConsole
         }
     }
 
+    /// <summary>Sets the key pressed event.</summary>
+    /// <param name="keyPressedEvent">The key pressed event.</param>
+    /// <exception cref="ArgumentNullException">KeyPressedEvent is null.</exception>
+    /// <exception cref="InvalidOperationException">Application has no console! or Input thread already started!.</exception>
+    [Obsolete($"Use {nameof(KeyPressed)} event and {nameof(StartKeyPressedMonitoring)}")]
+    public static void SetKeyPressedEvent(SystemConsoleKeyPressedDelegate keyPressedEvent)
+    {
+        lock (SyncRoot)
+        {
+            InputEvent = keyPressedEvent ?? throw new ArgumentNullException(nameof(keyPressedEvent));
+            StartKeyPressedMonitoring();
+        }
+    }
+
     /// <summary>Starts the key pressed monitoring.</summary>
     /// <remarks>Use the <see cref="KeyPressed"/> event for receifing pressed keys.</remarks>
     /// <exception cref="ArgumentNullException">KeyPressedEvent is null.</exception>
@@ -776,32 +810,6 @@ public static class SystemConsole
 
             inputThread = new Thread(InputEventThread);
             inputThread.Start();
-        }
-    }
-
-    /// <summary>Sets the key pressed event.</summary>
-    /// <param name="keyPressedEvent">The key pressed event.</param>
-    /// <exception cref="ArgumentNullException">KeyPressedEvent is null.</exception>
-    /// <exception cref="InvalidOperationException">Application has no console! or Input thread already started!.</exception>
-    [Obsolete($"Use {nameof(KeyPressed)} event and {nameof(StartKeyPressedMonitoring)}")]
-    public static void SetKeyPressedEvent(SystemConsoleKeyPressedDelegate keyPressedEvent)
-    {
-        lock (SyncRoot)
-        {
-            inputEvent = keyPressedEvent ?? throw new ArgumentNullException(nameof(keyPressedEvent));
-            StartKeyPressedMonitoring();
-        }
-    }
-
-    /// <summary>Removes the key pressed event.</summary>
-    /// <exception cref="InvalidOperationException">KeyPressedEvent was already removed!.</exception>
-    [Obsolete($"Use {nameof(KeyPressed)} event and {nameof(StartKeyPressedMonitoring)}")]
-    public static void RemoveKeyPressedEvent()
-    {
-        lock (SyncRoot)
-        {
-            if (inputEvent is null) throw new InvalidOperationException("KeyPressedEvent was already removed!");
-            inputEvent = null;
         }
     }
 
@@ -842,10 +850,27 @@ public static class SystemConsole
         }
     }
 
+    /// <summary>Writes the specified <paramref name="items"/>.</summary>
+    /// <param name="items">The items.</param>
+    /// <returns>Returns the number of newlines printed.</returns>
+    public static int Write(IEnumerable<ILogText>? items = null)
+    {
+        lock (SyncRoot)
+        {
+            var i = 0;
+            if (items is not null)
+            {
+                i += InternalWrite(items);
+            }
+
+            return i;
+        }
+    }
+
     /// <summary>Writes the specified <paramref name="items"/> followed by newline.</summary>
     /// <param name="items">The items.</param>
     /// <returns>Returns the number of newlines printed.</returns>
-    public static int WriteLine(IEnumerable<ILogText> items = null)
+    public static int WriteLine(IEnumerable<ILogText>? items = null)
     {
         lock (SyncRoot)
         {
@@ -857,23 +882,6 @@ public static class SystemConsole
 
             InternalNewLine();
             return ++i;
-        }
-    }
-
-    /// <summary>Writes the specified <paramref name="items"/>.</summary>
-    /// <param name="items">The items.</param>
-    /// <returns>Returns the number of newlines printed.</returns>
-    public static int Write(IEnumerable<ILogText> items = null)
-    {
-        lock (SyncRoot)
-        {
-            var i = 0;
-            if (items is not null)
-            {
-                i += InternalWrite(items);
-            }
-
-            return i;
         }
     }
 
