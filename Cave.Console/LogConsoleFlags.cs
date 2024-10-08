@@ -30,4 +30,7 @@ public enum LogConsoleFlags
     /// <summary>Do not reset console colors to default</summary>
     [Obsolete("No longer supported")]
     DoNotResetColors = 1 << 4,
+
+    /// <summary>Display the date of each message</summary>
+    DisplayDate = 1 << 5,
 }

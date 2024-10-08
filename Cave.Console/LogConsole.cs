@@ -36,48 +36,11 @@ public class LogConsole : LogReceiver
     /// <param name="level">The log level.</param>
     public static LogConsole StartNew(LogConsoleFlags flags = LogConsoleFlags.Default, LogLevel level = LogLevel.Information)
     {
-        var console = new LogConsole();
-        console.Level = level;
-        switch (flags)
+        var console = new LogConsole
         {
-            case LogConsoleFlags.Default:
-                console.MessageFormatter.MessageFormat = LogMessageFormatter.DefaultColored;
-                break;
-
-            case LogConsoleFlags.DefaultShort:
-                console.MessageFormatter.MessageFormat = LogMessageFormatter.ShortColored;
-                break;
-
-            default:
-            {
-                //build by flags
-                var format = new StringBuilder();
-                format.Append("<inverse>{LevelColor}");
-                var prefix = "";
-                if (flags.HasFlag(LogConsoleFlags.DisplayOneLetterLevel))
-                {
-                    format.Append($"{prefix}{{ShortLevel}}");
-                    prefix = " ";
-                }
-                if (flags.HasFlag(LogConsoleFlags.DisplayTimeStamp))
-                {
-                    format.Append($"{prefix}{{DateTime}}");
-                    prefix = " ";
-                }
-                if (flags.HasFlag(LogConsoleFlags.DisplayLongLevel))
-                {
-                    format.Append($"{prefix}{{Level}}");
-                    prefix = " ";
-                }
-                format.Append($"{prefix}{{Sender}}><reset> {{Content}}");
-                if (flags.HasFlag(LogConsoleFlags.DisplaySource))
-                {
-                    format.Append(" <inverse><blue>@{SourceFile}({SourceLine}): {SourceMember}\n");
-                }
-                console.MessageFormatter.MessageFormat = format.ToString();
-                break;
-            }
-        }
+            Level = level
+        };
+        console.MessageFormatter.MessageFormat = flags.ToMessageFormat();
         return Start(console);
     }
 

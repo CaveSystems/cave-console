@@ -3,7 +3,7 @@ using Cave.Logging;
 
 namespace Cave.Console;
 
-class LogConsoleWriter : LogWriter
+sealed class LogConsoleWriter : LogWriter
 {
     #region Public Methods
 

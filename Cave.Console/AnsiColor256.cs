@@ -14,9 +14,27 @@ public struct AnsiColor256
 
     #endregion Public Fields
 
-    /// <summary>Converts from index to <see cref="AnsiColor256"/>.</summary>
-    /// <param name="index"></param>
-    public static implicit operator AnsiColor256(byte index) => new() { Index = index };
+    #region Public Properties
+
+    /// <summary>Blue color value [0..5]</summary>
+    public byte Blue => (byte)(((Index - 16) % 6) * 51);
+
+    /// <summary>Blue color value as float [0..1]</summary>
+    public float BlueFloat => Blue / 255f;
+
+    /// <summary>Green color value [0..5]</summary>
+    public byte Green => (byte)((((Index - 16) % 36) / 6) * 51);
+
+    /// <summary>Green color value as float [0..1]</summary>
+    public float GreenFloat => Green / 255f;
+
+    /// <summary>Red color value [0..5]</summary>
+    public byte Red => (byte)(((Index - 16) / 36) * 51);
+
+    /// <summary>Red color value as float [0..1]</summary>
+    public float RedFloat => Red / 255f;
+
+    #endregion Public Properties
 
     #region Public Methods
 
@@ -49,27 +67,13 @@ public struct AnsiColor256
     /// <returns>Returns a new <see cref="AnsiColor256"/> instance</returns>
     public static AnsiColor256 GetGray(float intensity) => GetGray(intensity * 255f);
 
-    #endregion Public Methods
-
-    /// <summary>Red color value [0..5]</summary>
-    public byte Red => (byte)(((Index - 16) / 36) * 51);
-
-    /// <summary>Green color value [0..5]</summary>
-    public byte Green => (byte)((((Index - 16) % 36) / 6) * 51);
-
-    /// <summary>Blue color value [0..5]</summary>
-    public byte Blue => (byte)(((Index - 16) % 6) * 51);
-
-    /// <summary>Red color value as float [0..1]</summary>
-    public float RedFloat => Red / 255f;
-
-    /// <summary>Green color value as float [0..1]</summary>
-    public float GreenFloat => Green / 255f;
-
-    /// <summary>Blue color value as float [0..1]</summary>
-    public float BlueFloat => Blue / 255f;
+    /// <summary>Converts from index to <see cref="AnsiColor256"/>.</summary>
+    /// <param name="index"></param>
+    public static implicit operator AnsiColor256(byte index) => new() { Index = index };
 
     /// <summary>Converts to an <see cref="AnsiColorRGB"/> value.</summary>
     /// <returns>Returns the matching <see cref="AnsiColorRGB"/>.</returns>
-    public AnsiColorRGB ToAnsiColorRGB() => new AnsiColorRGB() { Red = Red, Green = Green, Blue = Blue };
+    public AnsiColorRGB ToAnsiColorRGB() => new() { Red = Red, Green = Green, Blue = Blue };
+
+    #endregion Public Methods
 }

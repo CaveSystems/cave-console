@@ -9,9 +9,9 @@ public class LogAnsiConsole : LogReceiver
     #region Public Constructors
 
     /// <summary>Initializes a new instance of the <see cref="LogConsole"/> class.</summary>
-    public LogAnsiConsole() : base()
+    public LogAnsiConsole(AnsiWriter writer) : base()
     {
-        Writer = new LogAnsiConsoleWriter();
+        Writer = new LogAnsiConsoleWriter(writer);
         MessageFormatter.MessageFormat = LogMessageFormatter.DefaultColored;
     }
 
@@ -31,52 +31,19 @@ public class LogAnsiConsole : LogReceiver
     #region Public Methods
 
     /// <summary>Creates a new logconsole object.</summary>
+    /// <param name="writer">
+    /// The writer to write to. This defaults to <see cref="AnsiConsole.Output"/> but can be changed to any target. ( <see cref="AnsiConsole.Error"/>,
+    /// /dev/ttyX, ...)
+    /// </param>
     /// <param name="flags">Flags.</param>
     /// <param name="level">The log level.</param>
-    public static LogAnsiConsole StartNew(LogConsoleFlags flags = LogConsoleFlags.Default, LogLevel level = LogLevel.Information)
+    public static LogAnsiConsole StartNew(AnsiWriter? writer = null, LogConsoleFlags flags = LogConsoleFlags.Default, LogLevel level = LogLevel.Information)
     {
-        var console = new LogAnsiConsole();
-        console.Level = level;
-        switch (flags)
+        var console = new LogAnsiConsole(writer ?? AnsiConsole.Output)
         {
-            case LogConsoleFlags.Default:
-                console.MessageFormatter.MessageFormat = LogMessageFormatter.DefaultColored;
-                break;
-
-            case LogConsoleFlags.DefaultShort:
-                console.MessageFormatter.MessageFormat = LogMessageFormatter.ShortColored;
-                break;
-
-            default:
-            {
-                //build by flags
-                var format = new StringBuilder();
-                format.Append("<inverse>{LevelColor}");
-                var prefix = "";
-                if (flags.HasFlag(LogConsoleFlags.DisplayOneLetterLevel))
-                {
-                    format.Append($"{prefix}{{ShortLevel}}");
-                    prefix = " ";
-                }
-                if (flags.HasFlag(LogConsoleFlags.DisplayTimeStamp))
-                {
-                    format.Append($"{prefix}{{DateTime}}");
-                    prefix = " ";
-                }
-                if (flags.HasFlag(LogConsoleFlags.DisplayLongLevel))
-                {
-                    format.Append($"{prefix}{{Level}}");
-                    prefix = " ";
-                }
-                format.Append($"{prefix}{{Sender}}><reset> {{Content}}");
-                if (flags.HasFlag(LogConsoleFlags.DisplaySource))
-                {
-                    format.Append(" <inverse><blue>@{SourceFile}({SourceLine}): {SourceMember}\n");
-                }
-                console.MessageFormatter.MessageFormat = format.ToString();
-                break;
-            }
-        }
+            Level = level
+        };
+        console.MessageFormatter.MessageFormat = flags.ToMessageFormat();
         return Start(console);
     }
 
