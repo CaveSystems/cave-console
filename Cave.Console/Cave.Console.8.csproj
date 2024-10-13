@@ -39,7 +39,7 @@
         </Otherwise>
     </Choose>
     <ItemGroup>
-      <ProjectReference Include="..\..\cave-logging\Cave.Logging\Cave.Logging.Latest.csproj" />
+      <ProjectReference Include="..\..\cave-logging\Cave.Logging\Cave.Logging.8.csproj" />
     </ItemGroup>
 
 </Project>
