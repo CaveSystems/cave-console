@@ -44,5 +44,13 @@ public interface IAnsiWriter
     /// <param name="text"></param>
     void WriteLine(string text);
 
+    /// <summary>Writes the specified <paramref name="text"/> followed by the system dependent newline.</summary>
+    /// <param name="text"></param>
+    void WriteLine(ILogText text);
+
+    /// <summary>Writes the specified <paramref name="items"/> followed by the system dependent newline.</summary>
+    /// <param name="items"></param>
+    void WriteLine(IEnumerable<ILogText> items);
+
     #endregion Public Methods
 }
