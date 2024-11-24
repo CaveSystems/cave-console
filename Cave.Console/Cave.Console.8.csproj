@@ -1,45 +1,49 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <!--project-->
-        <RootNamespace>Cave.Console</RootNamespace>
-        <AssemblyOriginatorKeyFile>Cave.Console.snk</AssemblyOriginatorKeyFile>
-        <Product>CaveSystems Console Library</Product>
-        <PackageTags>CaveSystems Console SystemConsole</PackageTags>
-        <Description>CaveSystems Console Bibliothek. This packages contains tools for colored console output.</Description>
-        <PackageProjectUrl>https://github.com/CaveSystems/cave-console</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/CaveSystems/cave-console</RepositoryUrl>
-        <!--settings-->
-        <PackageReleaseNotes />
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <SignAssembly>true</SignAssembly>
-    </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
 
-    <!-- framework includes -->
-    <Choose>
-        <When Condition=" '$(TargetFramework)'=='net20' OR '$(TargetFramework)'=='net35' ">
-            <ItemGroup>
-                <Reference Include="System" />
-            </ItemGroup>
-        </When>
+		<Version>9.99-future</Version>
+		<AssemblyName>Cave.Console</AssemblyName>
 
-        <When Condition=" $(TargetFramework.StartsWith('net4')) ">
-            <ItemGroup>
-                <Reference Include="System" />
-                <Reference Include="System.Core" />
-                <Reference Include="Microsoft.CSharp" />
-            </ItemGroup>
-        </When>
+		<!--project-->
+		<RootNamespace>Cave.Console</RootNamespace>
+		<AssemblyOriginatorKeyFile>Cave.Console.snk</AssemblyOriginatorKeyFile>
+		<Product>CaveSystems Console Library</Product>
+		<PackageTags>CaveSystems Console SystemConsole</PackageTags>
+		<Description>CaveSystems Console Bibliothek. This packages contains tools for colored console output.</Description>
+		<PackageProjectUrl>https://github.com/CaveSystems/cave-console</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/CaveSystems/cave-console</RepositoryUrl>
+		<!--settings-->
+		<PackageReleaseNotes />
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<SignAssembly>true</SignAssembly>
+	</PropertyGroup>
 
-        <Otherwise>
-            <!-- > net 5.0 -->
-            <ItemGroup>
-                <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
-            </ItemGroup>
-        </Otherwise>
-    </Choose>
-    <ItemGroup>
-      <ProjectReference Include="..\..\cave-logging\Cave.Logging\Cave.Logging.8.csproj" />
-    </ItemGroup>
+	<!-- framework includes -->
+	<Choose>
+		<When Condition=" '$(TargetFramework)'=='net20' OR '$(TargetFramework)'=='net35' ">
+			<ItemGroup>
+				<Reference Include="System" />
+			</ItemGroup>
+		</When>
+
+		<When Condition=" $(TargetFramework.StartsWith('net4')) ">
+			<ItemGroup>
+				<Reference Include="System" />
+				<Reference Include="System.Core" />
+				<Reference Include="Microsoft.CSharp" />
+			</ItemGroup>
+		</When>
+
+		<Otherwise>
+			<!-- > net 5.0 -->
+			<ItemGroup>
+				<PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
+			</ItemGroup>
+		</Otherwise>
+	</Choose>
+	<ItemGroup>
+		<ProjectReference Include="..\..\cave-logging\Cave.Logging\Cave.Logging.8.csproj" />
+	</ItemGroup>
 
 </Project>
