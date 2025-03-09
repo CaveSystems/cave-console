@@ -11,7 +11,7 @@ class Program
 
     static void Log(object? state)
     {
-        var level = (LogLevel)(2 + (int)state);
+        var level = (LogLevel)(2 + (state is int i ? i : 0));
         var log = new Logger($"Logger{state}");
         var watch = StopWatch.StartNew();
         var number = 0;
