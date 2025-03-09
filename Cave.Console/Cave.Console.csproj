@@ -21,7 +21,7 @@
     </PropertyGroup>
     <!-- nuget packages -->
     <ItemGroup>
-        <PackageReference Include="Cave.Extensions" Version="4.0.3" />
+        <PackageReference Include="Cave.Extensions" Version="4.0.4" />
         <PackageReference Include="Cave.Logging" Version="4.0.2" />
     </ItemGroup>
 
