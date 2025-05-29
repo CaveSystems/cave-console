@@ -260,6 +260,7 @@ public static class SystemConsole
             var keyInfo = ReadKey();
             switch (keyInfo.Key)
             {
+                case ConsoleKey.Tab: continue;
                 case ConsoleKey.Backspace:
                 {
                     if (result.Length > 0)
@@ -289,21 +290,23 @@ public static class SystemConsole
             var keyInfo = ReadKey();
             switch (keyInfo.Key)
             {
-                case ConsoleKey.Tab:
-                    continue;
+                case ConsoleKey.Tab: continue;
                 case ConsoleKey.Backspace:
                 {
                     if (result.Length > 0)
                     {
-                        System.Console.Write(keyInfo.KeyChar);
+                        System.Console.Write($"{keyInfo.KeyChar} {keyInfo.KeyChar}");
                         result = result[..^1];
                     }
                     continue;
                 }
                 case ConsoleKey.Enter: return result;
             }
-            result += keyInfo.KeyChar;
-            System.Console.Write(Star);
+            if (!char.IsControl(keyInfo.KeyChar)) // Keine Steuerzeichen übernehmen
+            {
+                result += keyInfo.KeyChar;
+                System.Console.Write(Star);
+            }
         }
     }
 
