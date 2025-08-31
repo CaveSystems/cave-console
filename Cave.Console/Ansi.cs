@@ -392,13 +392,13 @@ public class Ansi : IEnumerable<byte>
 
     #region Public Methods
 
-    /// <summary>Clears the whole screen</summary>
-    public static readonly Ansi ClearScreen = $"\x1B[3J";
+    /// <summary>Clears the whole screen by using clear visible, clear all, set cursor top left</summary>
+    public static readonly Ansi ClearScreen = $"\x1B[2J\x1B[3J\x1b[H";
 
     /// <summary>Clears part of the screen.</summary>
     /// <param name="screen">Allows to select the part of the screen to clear.</param>
     /// <returns>Returns the <see cref="Ansi"/> instance</returns>
-    public static Ansi Clear(AnsiScreen screen = AnsiScreen.All) => $"\x1B[{(byte)screen}J";
+    public static Ansi Clear(AnsiScreen screen = AnsiScreen.All) => screen == AnsiScreen.All ? ClearScreen : $"\x1B[{(byte)screen}J";
 
     /// <summary>Clears part of the line.</summary>
     /// <param name="line">Allows to select the part of the line to clear.</param>

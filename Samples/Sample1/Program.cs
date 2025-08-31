@@ -21,7 +21,7 @@ class Program
 #if ANSI
         var console = LogAnsiConsole.StartNew();
 #else
-        var console = LogConsole.StartNew();
+        var console = LogConsole.StartNew(LogConsoleFlags.DefaultShort);
 #endif
         //prepare 3 logger instances for the test
         var sender1 = new Logger("Sender1");

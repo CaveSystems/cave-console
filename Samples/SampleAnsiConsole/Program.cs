@@ -21,7 +21,9 @@ class Program
             }
             AnsiConsole.Output.Write($"|\n");
         }
-        AnsiConsole.Output.Write($"\n");
+        AnsiConsole.Output.Write($"\n\nPress enter to exit...\n");
+        Console.ReadLine();
+        AnsiConsole.Clear();
 
         AnsiConsole.Output.Write($"Aixterm Ansi Colors (16 colors)\n");
         foreach (AnsiColor16 bg in Enum.GetValues(typeof(AnsiColor16)))
@@ -32,7 +34,9 @@ class Program
             }
             AnsiConsole.Output.Write($"|\n");
         }
-        AnsiConsole.Output.Write($"\n");
+        AnsiConsole.Output.Write($"\n\nPress enter to exit...\n");
+        Console.ReadLine();
+        AnsiConsole.Clear();
 
         AnsiConsole.Output.Write($"VGA Ansi Colors (256 colors)\n");
         //print only the 216 indexed rgb colors
@@ -45,7 +49,9 @@ class Program
             }
             AnsiConsole.Output.Write($"{Ansi.Reset}|\n");
         }
-        AnsiConsole.Output.Write($"\n");
+        AnsiConsole.Output.Write($"\n\nPress enter to exit...\n");
+        Console.ReadLine();
+        AnsiConsole.Clear();
     }
 
     #endregion Private Methods
