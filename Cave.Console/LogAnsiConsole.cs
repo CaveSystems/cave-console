@@ -4,11 +4,12 @@ using Cave.Logging;
 namespace Cave.Console;
 
 /// <summary>Provides logging to the default system console instance.</summary>
-public class LogAnsiConsole : LogReceiver
+public class LogAnsiConsole : LogReceiver, ILogConsole
 {
     #region Public Constructors
 
-    /// <summary>Initializes a new instance of the <see cref="LogConsole"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="LogAnsiConsole"/> class.</summary>
+    /// <param name="writer">The writer to write to.</param>
     public LogAnsiConsole(AnsiWriter writer) : base()
     {
         Writer = new LogAnsiConsoleWriter(writer);

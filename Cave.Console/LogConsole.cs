@@ -5,7 +5,7 @@ using Cave.Logging;
 namespace Cave.Console;
 
 /// <summary>Provides logging to the default system console instance.</summary>
-public class LogConsole : LogReceiver
+public class LogConsole : LogReceiver, ILogConsole
 {
     #region Public Constructors
 
@@ -26,7 +26,7 @@ public class LogConsole : LogReceiver
         get => SystemConsole.Title;
         set => SystemConsole.Title = value;
     }
-
+    
     #endregion Public Properties
 
     #region Public Methods

@@ -1,11 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using Cave;
-using Cave.IO;
 using Cave.Logging;
 
 namespace Cave.Console;
@@ -88,12 +86,13 @@ public static class SystemConsole
     /// <summary>(Re-)Initializes this instance.</summary>
     static void InternalInitialize()
     {
-        var env = Environment.GetEnvironmentVariables();
-        switch (env["color"])
+        var color = Environment.GetEnvironmentVariables().OfType<DictionaryEntry>().Where(e => e.Key is string key && key.Equals("color", StringComparison.OrdinalIgnoreCase))
+            .Select(e => e.Value).FirstOrDefault()?.ToString()?.ToUpperInvariant().Trim();
+        switch (color)
         {
-            case "always": forceColor = true; break;
-            case "off":
-            case "none": useColor = false; break;
+            case "ALWAYS": forceColor = true; break;
+            case "OFF":
+            case "NONE": useColor = false; break;
         }
 
         try
@@ -302,11 +301,12 @@ public static class SystemConsole
                 }
                 case ConsoleKey.Enter: return result;
             }
-            if (!char.IsControl(keyInfo.KeyChar)) // Keine Steuerzeichen übernehmen
+            if (keyInfo.Modifiers.HasFlag(ConsoleModifiers.Control) || keyInfo.Modifiers.HasFlag(ConsoleModifiers.Alt) || char.IsControl(keyInfo.KeyChar))
             {
-                result += keyInfo.KeyChar;
-                System.Console.Write(Star);
+                continue;
             }
+            result += keyInfo.KeyChar;
+            System.Console.Write(Star);
         }
     }
 
@@ -525,10 +525,10 @@ public static class SystemConsole
     public static bool ClearEOL { get; set; }
 
     /// <summary>Gets or sets the default background color.</summary>
-    public static ConsoleColor DefaultBackgroundColor { get; set; }
+    public static ConsoleColor DefaultBackgroundColor { get; set; } = ConsoleColor.Gray;
 
     /// <summary>Gets or sets the default forground color.</summary>
-    public static ConsoleColor DefaultForegroundColor { get; set; }
+    public static ConsoleColor DefaultForegroundColor { get; set; } = ConsoleColor.Black;
 
     /// <summary>The number of leading spaces after a wordwrap.</summary>
     public static int Ident { get; set; } = 2;
