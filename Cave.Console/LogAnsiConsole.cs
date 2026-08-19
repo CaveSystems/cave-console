@@ -20,12 +20,15 @@ public class LogAnsiConsole : LogReceiver, ILogConsole
 
     #region Public Properties
 
-    /// <summary>Gets or sets the title of the logconsole.</summary>
+    /// <inheritdoc/>
     public string Title
     {
         get => AnsiConsole.Title;
         set => AnsiConsole.Title = value;
     }
+
+    /// <inheritdoc/>
+    public bool IsAnsi => true;
 
     #endregion Public Properties
 

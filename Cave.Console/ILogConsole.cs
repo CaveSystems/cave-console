@@ -11,4 +11,7 @@ public interface ILogConsole : ILogReceiver
 
     /// <summary>Clears the terminal.</summary>
     void Clear();
+
+    /// <summary>Gets a value indicating whether the console supports ANSI escape codes.</summary>
+    bool IsAnsi { get; }
 }

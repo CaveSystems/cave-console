@@ -8,9 +8,9 @@ class Program
 {
     #region Private Fields
 
-    static int MessagesSent = 0;
-    static int SendersReady = 0;
-    static ManualResetEventSlim StartEvent = new(false);
+    internal static int MessagesSent = 0;
+    internal static int SendersReady = 0;
+    internal static ManualResetEventSlim StartEvent = new(false);
 
     #endregion Private Fields
 

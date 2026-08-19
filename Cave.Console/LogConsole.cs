@@ -20,13 +20,16 @@ public class LogConsole : LogReceiver, ILogConsole
 
     #region Public Properties
 
-    /// <summary>Gets or sets the title of the logconsole.</summary>
+    /// <inheritdoc/>
     public string Title
     {
         get => SystemConsole.Title;
         set => SystemConsole.Title = value;
     }
-    
+
+    /// <inheritdoc/>
+    public bool IsAnsi => false;
+
     #endregion Public Properties
 
     #region Public Methods
@@ -45,7 +48,11 @@ public class LogConsole : LogReceiver, ILogConsole
     }
 
     /// <summary>Clears the terminal.</summary>
-    public void Clear() => SystemConsole.Clear();
+    public void Clear()
+    {
+        SystemConsole.ResetColor();
+        SystemConsole.Clear();
+    }
 
     /// <inheritdoc/>
     public override string ToString() => "LogConsole[" + Level + "]";

@@ -9,7 +9,7 @@ using Cave.Logging;
 namespace Cave.Console;
 
 /// <summary>Provides access to the system console.</summary>
-public static class SystemConsole
+public class SystemConsole
 {
     #region Private Classes
 
@@ -28,16 +28,15 @@ public static class SystemConsole
 
     #region Private Fields
 
-    static readonly Queue<Item> ColorQueue = new();
-    static readonly Queue<int> IdentQueue = new();
-    static readonly Logger Log = new();
-    static readonly string Star = "*";
+    static readonly Queue<Item> colorQueue = new();
+    static readonly Queue<int> identQueue = new();
+    static readonly Logger log = new();
     static string buffer = string.Empty;
     static bool forceColor;
     static Thread? inputThread;
     static string title = string.Empty;
     static bool useColor = true;
-    static bool wordWrap = true;
+    static bool wordWrap;
 
     #endregion Private Fields
 
@@ -53,7 +52,7 @@ public static class SystemConsole
     {
         Thread.CurrentThread.IsBackground = true;
         Thread.CurrentThread.Name = $"{nameof(SystemConsole)}.{nameof(InputEventThread)}";
-        Log.Debug($"{Thread.CurrentThread.Name} id {Thread.CurrentThread.ManagedThreadId} <green>start<reset>.");
+        log.Debug($"{Thread.CurrentThread.Name} id {Thread.CurrentThread.ManagedThreadId} <green>start<reset>.");
         Exception? lastException = null;
         var exceptionCounter = 0;
         while (inputThread != null)
@@ -73,12 +72,21 @@ public static class SystemConsole
                 if (lastException != ex)
                 {
                     lastException = ex;
-                    Log.Error(ex, $"Cannot read from console, retry in {((double)wait).FormatSeconds()}!");
+                    log.Error(ex, $"Cannot read from console, retry in {((double)wait).FormatSeconds()}!");
                 }
                 Thread.Sleep(wait);
             }
         }
-        Log.Debug($"{Thread.CurrentThread.Name} id {Thread.CurrentThread.ManagedThreadId} <red>exit<reset>.");
+        log.Debug($"{Thread.CurrentThread.Name} id {Thread.CurrentThread.ManagedThreadId} <red>exit<reset>.");
+    }
+
+    static void InternalBackspace(ref string result)
+    {
+        if (result.Length > 0)
+        {
+            System.Console.Write("\b \b");
+            result = result[..^1];
+        }
     }
 
     static void InternalClearToEOL() => InternalWriteString(new string(' ', System.Console.BufferWidth - System.Console.CursorLeft));
@@ -171,32 +179,11 @@ public static class SystemConsole
         }
         try
         {
-            if (Platform.IsMicrosoft)
-            {
-                try
-                {
-                    // disable word wrap on windows 10 and newer
-                    var winVer = Environment.OSVersion.Version;
-                    if (LatestVersion.VersionIsNewer(winVer, new Version(6, 2)))
-                    {
-                        wordWrap = false;
-                    }
-                }
-                catch
-                {
-                }
-            }
-            if (System.Console.CursorLeft >= System.Console.WindowWidth)
-            {
-                throw new InvalidOperationException();
-            }
-
             CanWordWrap = CanPosition;
         }
         catch
         {
-            wordWrap = false;
-            CanWordWrap = false;
+            wordWrap = CanWordWrap = false;
         }
 
         // console may be a stdout stream, wait until newline
@@ -246,7 +233,7 @@ public static class SystemConsole
         }
     }
 
-    static string InternalReadLine()
+    static string InternalReadLine(char? replacementChar = null)
     {
         if (UseColor)
         {
@@ -262,51 +249,29 @@ public static class SystemConsole
                 case ConsoleKey.Tab: continue;
                 case ConsoleKey.Backspace:
                 {
-                    if (result.Length > 0)
-                    {
-                        System.Console.Write(keyInfo.KeyChar + " " + keyInfo.KeyChar);
-                        result = result[..^1];
-                    }
+                    InternalBackspace(ref result);
                     continue;
                 }
                 case ConsoleKey.Enter: return result;
             }
-            result += keyInfo.KeyChar;
-            System.Console.Write(keyInfo.KeyChar);
-        }
-    }
-
-    static string InternalReadPassword()
-    {
-        if (UseColor)
-        {
-            InternalSetColors();
-        }
-
-        var result = string.Empty;
-        while (true)
-        {
-            var keyInfo = ReadKey();
-            switch (keyInfo.Key)
+            if (keyInfo.KeyChar == '\u007f' || keyInfo.KeyChar == '\b')
             {
-                case ConsoleKey.Tab: continue;
-                case ConsoleKey.Backspace:
-                {
-                    if (result.Length > 0)
-                    {
-                        System.Console.Write($"{keyInfo.KeyChar} {keyInfo.KeyChar}");
-                        result = result[..^1];
-                    }
-                    continue;
-                }
-                case ConsoleKey.Enter: return result;
+                InternalBackspace(ref result);
+                continue;
             }
-            if (keyInfo.Modifiers.HasFlag(ConsoleModifiers.Control) || keyInfo.Modifiers.HasFlag(ConsoleModifiers.Alt) || char.IsControl(keyInfo.KeyChar))
+            if (keyInfo.Modifiers.HasFlag(ConsoleModifiers.Control) || keyInfo.Modifiers.HasFlag(ConsoleModifiers.Alt) || keyInfo.KeyChar == '\0' || char.IsControl(keyInfo.KeyChar))
             {
                 continue;
             }
             result += keyInfo.KeyChar;
-            System.Console.Write(Star);
+            if (replacementChar.HasValue)
+            {
+                System.Console.Write(replacementChar.Value);
+            }
+            else
+            {
+                System.Console.Write(keyInfo.KeyChar);
+            }
         }
     }
 
@@ -657,7 +622,7 @@ public static class SystemConsole
     {
         lock (SyncRoot)
         {
-            var i = ColorQueue.Dequeue();
+            var i = colorQueue.Dequeue();
             TextColor = i.Color;
             TextStyle = i.Style;
             Inverted = i.Inverted;
@@ -673,7 +638,7 @@ public static class SystemConsole
     {
         lock (SyncRoot)
         {
-            Ident = IdentQueue.Dequeue();
+            Ident = identQueue.Dequeue();
         }
     }
 
@@ -682,7 +647,7 @@ public static class SystemConsole
     {
         lock (SyncRoot)
         {
-            ColorQueue.Enqueue(new Item() { Color = TextColor, Style = TextStyle, Inverted = Inverted });
+            colorQueue.Enqueue(new Item() { Color = TextColor, Style = TextStyle, Inverted = Inverted });
         }
     }
 
@@ -691,7 +656,7 @@ public static class SystemConsole
     {
         lock (SyncRoot)
         {
-            IdentQueue.Enqueue(Ident);
+            identQueue.Enqueue(Ident);
         }
     }
 
@@ -739,7 +704,7 @@ public static class SystemConsole
     {
         lock (SyncRoot)
         {
-            return InternalReadPassword();
+            return InternalReadLine('*');
         }
     }
 

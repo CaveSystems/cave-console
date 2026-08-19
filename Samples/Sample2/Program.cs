@@ -29,6 +29,17 @@ class Program
             Logger.Flush();
         }
 
+        if (console.IsAnsi)
+        {
+            AnsiConsole.Write($"Press {Ansi.FG.Green}ENTER{Ansi.Reset} to exit...");
+            AnsiConsole.ReadLine();
+        }
+        else
+        {
+            SystemConsole.Write("Press <green>ENTER<default> to exit...");
+            SystemConsole.ReadLine();
+        }
+
         //close logging system
         Logger.Close();
     }

@@ -6,13 +6,54 @@ using Cave.Logging;
 namespace Cave.Console;
 
 /// <summary></summary>
-public static class AnsiConsole
+public class AnsiConsole
 {
     #region Private Fields
 
     static string title = string.Empty;
 
     #endregion Private Fields
+
+    #region Private Methods
+
+    static void InternalBackspace(ref string result)
+    {
+        if (result.Length > 0)
+        {
+            Output.Write("\b \b");
+            result = result[..^1];
+        }
+    }
+
+    static string InternalReadLine(char? replacementChar = null)
+    {
+        var reader = StandardInput.GetReader();
+        var result = string.Empty;
+        while (true)
+        {
+            var c = reader.ReadChar();
+            switch (c)
+            {
+                case '\t': continue;
+                case '\b':
+                case '\u007f':
+                {
+                    InternalBackspace(ref result);
+                    continue;
+                }
+                case '\r':
+                case '\n': return result;
+            }
+            if (c == '\0' || char.IsControl(c))
+            {
+                continue;
+            }
+            result += c;
+            Output.Write((replacementChar ?? c).ToString());
+        }
+    }
+
+    #endregion Private Methods
 
     #region Public Properties
 
@@ -54,12 +95,32 @@ public static class AnsiConsole
 
     #region Public Methods
 
+    /// <summary>Locks the console and reads an input line.</summary>
+    /// <returns>Returns the string read.</returns>
+    public static string ReadLine()
+    {
+        lock (SyncRoot)
+        {
+            return InternalReadLine();
+        }
+    }
+
+    /// <summary>Locks the console and reads an input line showing only stars for each character.</summary>
+    /// <returns>Returns the string read.</returns>
+    public static string ReadPassword()
+    {
+        lock (SyncRoot)
+        {
+            return InternalReadLine('*');
+        }
+    }
+
     /// <summary>Clears the console.</summary>
     public static void Clear()
     {
         lock (SyncRoot)
         {
-            Output.Write(Ansi.Clear());
+            Output.Write(Ansi.Reset + Ansi.ClearScreen);
         }
     }
 

@@ -12,9 +12,10 @@ namespace Cave.Console;
 /// <summary>Implements a writer for writing characters to a stream using ansi escape codes, encoding, specific newline and endianess.</summary>
 public class AnsiWriter : IAnsiWriter, IDisposable
 {
+    internal static readonly char[] CRLF = ['\r', '\n'];
+
     #region Private Fields
 
-    static readonly char[] CRLF = ['\r', '\n'];
     readonly Func<StringEncoding, NewLineMode, EndianType, DataWriter> getWriter;
     StringBuilder buffer = new();
     LogColor currentLogTextColor;

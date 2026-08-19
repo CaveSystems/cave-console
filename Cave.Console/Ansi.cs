@@ -156,6 +156,12 @@ public class Ansi : IEnumerable<byte>
         /// </summary>
         public static Ansi DCS => "\x1BP";
 
+        /// <summary>Disables local echo (SRM - Send/Receive Mode set).</summary>
+        public static Ansi EchoOff => "\x1B[12h";
+
+        /// <summary>Enables local echo (SRM - Send/Receive Mode reset).</summary>
+        public static Ansi EchoOn => "\x1B[12l";
+
         /// <summary>Operating System Command - Starts a control string for the operating system to use, terminated by ST.</summary>
         public static Ansi OSC => "\x1B]";
 
